@@ -106,20 +106,13 @@ func (manager *Manager) watchAnalogPin(pin int, interval time.Duration, input ch
 }
 
 func (manager *Manager) watchDigitalOutput(output chan ganglia.DigitalValue, pin int) {
-	defer close(output)
-
-	for running := true; running; {
-		select {
-		case <-manager.done:
-			running = false
-		case value := <-output:
-			if err := manager.broker.WriteDigitalValue(pin, bool(value)); err != nil {
-				manager.logger.Printf(
-					"Failed to write digital value to pin %d. %s\n",
-					pin,
-					err.Error(),
-				)
-			}
+	for value := range output {
+		if err := manager.broker.WriteDigitalValue(pin, bool(value)); err != nil {
+			manager.logger.Printf(
+				"Failed to write digital value to pin %d. %s\n",
+				pin,
+				err.Error(),
+			)
 		}
 	}
 }

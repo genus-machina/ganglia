@@ -72,6 +72,8 @@ func (manager *Manager) Output(name string, initialValue ganglia.DigitalValue) (
 }
 
 func (manager *Manager) watchInput(pin gpio.PinIn, input chan ganglia.DigitalEvent) {
+	defer close(input)
+
 	for running := true; running; {
 		select {
 		case <-manager.done:
@@ -90,20 +92,13 @@ func (manager *Manager) watchInput(pin gpio.PinIn, input chan ganglia.DigitalEve
 }
 
 func (manager *Manager) watchOutput(output chan ganglia.DigitalValue, pin gpio.PinOut) {
-	defer close(output)
-
-	for running := true; running; {
-		select {
-		case <-manager.done:
-			running = false
-		case value := <-output:
-			if err := pin.Out(gpio.Level(value)); err != nil {
-				manager.logger.Printf(
-					"Failed to write value to pin '%s'. %s\n",
-					pin.Name(),
-					err.Error(),
-				)
-			}
+	for value := range output {
+		if err := pin.Out(gpio.Level(value)); err != nil {
+			manager.logger.Printf(
+				"Failed to write value to pin '%s'. %s\n",
+				pin.Name(),
+				err.Error(),
+			)
 		}
 	}
 }
