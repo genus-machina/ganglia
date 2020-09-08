@@ -5,6 +5,7 @@ import (
 )
 
 type Display interface {
+	Halt()
 	Render(content Widget)
 }
 

@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/gif"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type GIF struct {
 	content  *gif.GIF
 	index    int
 	maxIndex int
+	once     *sync.Once
 }
 
 func NewGIF(path string) (*GIF, error) {
@@ -35,6 +37,7 @@ func NewGIF(path string) (*GIF, error) {
 		widget.maxIndex = len(widget.content.Image) * (widget.content.LoopCount + 1)
 	}
 
+	widget.once = new(sync.Once)
 	return widget, nil
 }
 
@@ -42,6 +45,7 @@ func (widget *GIF) advanceFrame(rerender Trigger) {
 	delay := widget.getDelay()
 	time.Sleep(delay)
 	widget.index++
+	widget.once = new(sync.Once)
 	rerender()
 }
 
@@ -64,7 +68,7 @@ func (widget *GIF) Render(bounds image.Rectangle, rerender Trigger) image.Image 
 	scaleImage(buffer, scaledBounds, frame, frame.Bounds())
 
 	if widget.maxIndex < 0 || widget.index < widget.maxIndex {
-		go widget.advanceFrame(rerender)
+		widget.once.Do(func() { go widget.advanceFrame(rerender) })
 	}
 
 	return buffer
