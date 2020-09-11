@@ -7,32 +7,6 @@ import (
 	"github.com/genus-machina/ganglia"
 )
 
-type AnalogEvent struct {
-	time  time.Time
-	value uint
-}
-
-func (event *AnalogEvent) Time() time.Time {
-	return event.time
-}
-
-func (event *AnalogEvent) Value() ganglia.AnalogValue {
-	return ganglia.AnalogValue(event.value)
-}
-
-type DigitalEvent struct {
-	time  time.Time
-	value bool
-}
-
-func (event *DigitalEvent) Time() time.Time {
-	return event.time
-}
-
-func (event *DigitalEvent) Value() ganglia.DigitalValue {
-	return ganglia.DigitalValue(event.value)
-}
-
 type Manager struct {
 	broker *Broker
 	done   chan bool
@@ -58,13 +32,13 @@ func Connect(logger *log.Logger, port string) (*Manager, error) {
 }
 
 func (manager *Manager) AnalogInput(pin int, interval time.Duration) ganglia.AnalogInput {
-	input := make(chan ganglia.AnalogEvent)
+	input := make(chan *ganglia.AnalogEvent)
 	go manager.watchAnalogPin(pin, interval, input)
 	return input
 }
 
 func (manager *Manager) DigitalInput(pin int, interval time.Duration) ganglia.DigitalInput {
-	input := make(chan ganglia.DigitalEvent)
+	input := make(chan *ganglia.DigitalEvent)
 	go manager.watchDigitalPin(pin, interval, input)
 	return input
 }
@@ -81,7 +55,7 @@ func (manager *Manager) Halt() {
 	}
 }
 
-func (manager *Manager) watchAnalogPin(pin int, interval time.Duration, input chan ganglia.AnalogEvent) {
+func (manager *Manager) watchAnalogPin(pin int, interval time.Duration, input chan *ganglia.AnalogEvent) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	defer close(input)
@@ -92,7 +66,7 @@ func (manager *Manager) watchAnalogPin(pin int, interval time.Duration, input ch
 			running = false
 		case <-ticker.C:
 			if value, err := manager.broker.ReadAnalogValue(pin); err == nil {
-				event := &AnalogEvent{time.Now(), value}
+				event := &ganglia.AnalogEvent{time.Now(), ganglia.AnalogValue(value)}
 				input <- event
 			} else {
 				manager.logger.Printf(
@@ -117,7 +91,7 @@ func (manager *Manager) watchDigitalOutput(output chan ganglia.DigitalValue, pin
 	}
 }
 
-func (manager *Manager) watchDigitalPin(pin int, interval time.Duration, input chan ganglia.DigitalEvent) {
+func (manager *Manager) watchDigitalPin(pin int, interval time.Duration, input chan *ganglia.DigitalEvent) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	defer close(input)
@@ -128,7 +102,7 @@ func (manager *Manager) watchDigitalPin(pin int, interval time.Duration, input c
 			running = false
 		case <-ticker.C:
 			if value, err := manager.broker.ReadDigitalValue(pin); err == nil {
-				event := &DigitalEvent{time.Now(), value}
+				event := &ganglia.DigitalEvent{time.Now(), ganglia.DigitalValue(value)}
 				input <- event
 			} else {
 				manager.logger.Printf(

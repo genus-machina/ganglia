@@ -1,31 +1,33 @@
-package ganglia
+package monitors
 
 import (
 	"time"
+
+	"github.com/genus-machina/ganglia"
 )
 
 type AnalogTestEvent struct {
 	T time.Time
-	V AnalogValue
+	V ganglia.AnalogValue
 }
 
 func (event *AnalogTestEvent) Time() time.Time {
 	return event.T
 }
 
-func (event *AnalogTestEvent) Value() AnalogValue {
+func (event *AnalogTestEvent) Value() ganglia.AnalogValue {
 	return event.V
 }
 
 type DigitalTestEvent struct {
 	T time.Time
-	V DigitalValue
+	V ganglia.DigitalValue
 }
 
 func (event *DigitalTestEvent) Time() time.Time {
 	return event.T
 }
 
-func (event *DigitalTestEvent) Value() DigitalValue {
+func (event *DigitalTestEvent) Value() ganglia.DigitalValue {
 	return event.V
 }

@@ -9,19 +9,6 @@ import (
 	"periph.io/x/periph/conn/gpio/gpioreg"
 )
 
-type Event struct {
-	level gpio.Level
-	time  time.Time
-}
-
-func (event *Event) Time() time.Time {
-	return event.time
-}
-
-func (event *Event) Value() ganglia.DigitalValue {
-	return ganglia.DigitalValue(event.level)
-}
-
 type Manager struct {
 	done   chan bool
 	logger *log.Logger
@@ -46,7 +33,7 @@ func (manager *Manager) Halt() {
 }
 
 func (manager *Manager) Input(name string, pull gpio.Pull) (ganglia.DigitalInput, error) {
-	input := make(chan ganglia.DigitalEvent, 1)
+	input := make(chan *ganglia.DigitalEvent, 1)
 	pin := gpioreg.ByName(name)
 
 	if err := pin.In(pull, gpio.BothEdges); err != nil {
@@ -71,7 +58,7 @@ func (manager *Manager) Output(name string, initialValue ganglia.DigitalValue) (
 	return output, nil
 }
 
-func (manager *Manager) watchInput(pin gpio.PinIn, input chan ganglia.DigitalEvent) {
+func (manager *Manager) watchInput(pin gpio.PinIn, input chan *ganglia.DigitalEvent) {
 	defer close(input)
 
 	for running := true; running; {
@@ -80,9 +67,9 @@ func (manager *Manager) watchInput(pin gpio.PinIn, input chan ganglia.DigitalEve
 			running = false
 		default:
 			if pin.WaitForEdge(-1) {
-				event := &Event{
-					level: pin.Read(),
-					time:  time.Now(),
+				event := &ganglia.DigitalEvent{
+					Time:  time.Now(),
+					Value: ganglia.DigitalValue(pin.Read()),
 				}
 
 				input <- event

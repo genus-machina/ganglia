@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"log"
 	"time"
 
@@ -12,8 +13,8 @@ type Manager struct {
 	broker *Broker
 	logger *log.Logger
 
-	analogChannels  []chan ganglia.AnalogEvent
-	digitalChannels []chan ganglia.DigitalEvent
+	analogChannels  []chan *ganglia.AnalogEvent
+	digitalChannels []chan *ganglia.DigitalEvent
 }
 
 func NewManager(logger *log.Logger, broker *Broker) *Manager {
@@ -33,14 +34,14 @@ func Connect(logger *log.Logger, options *MqttOptions) (*Manager, error) {
 }
 
 func (manager *Manager) AnalogInput(topic string) ganglia.AnalogInput {
-	input := make(chan ganglia.AnalogEvent, 1)
+	input := make(chan *ganglia.AnalogEvent, 1)
 	manager.broker.Subscribe(topic, manager.handleAnalogEvent(input))
 	manager.analogChannels = append(manager.analogChannels, input)
 	return input
 }
 
 func (manager *Manager) DigitalInput(topic string) ganglia.DigitalInput {
-	input := make(chan ganglia.DigitalEvent, 1)
+	input := make(chan *ganglia.DigitalEvent, 1)
 	manager.broker.Subscribe(topic, manager.handleDigitalEvent(input))
 	manager.digitalChannels = append(manager.digitalChannels, input)
 	return input
@@ -64,9 +65,11 @@ func (manager *Manager) Halt() {
 	}
 }
 
-func (manager *Manager) handleAnalogEvent(input chan ganglia.AnalogEvent) mqtt.MessageHandler {
+func (manager *Manager) handleAnalogEvent(input chan *ganglia.AnalogEvent) mqtt.MessageHandler {
 	return func(client mqtt.Client, message mqtt.Message) {
-		if event, err := parseAnalogEvent(message); err == nil {
+		event := new(ganglia.AnalogEvent)
+
+		if err := json.Unmarshal(message.Payload(), event); err == nil {
 			input <- event
 		} else {
 			manager.logger.Printf("Failed to parse analog event. %s.\n", err.Error())
@@ -76,9 +79,11 @@ func (manager *Manager) handleAnalogEvent(input chan ganglia.AnalogEvent) mqtt.M
 	}
 }
 
-func (manager *Manager) handleDigitalEvent(input chan ganglia.DigitalEvent) mqtt.MessageHandler {
+func (manager *Manager) handleDigitalEvent(input chan *ganglia.DigitalEvent) mqtt.MessageHandler {
 	return func(client mqtt.Client, message mqtt.Message) {
-		if event, err := parseDigitalEvent(message); err == nil {
+		event := new(ganglia.DigitalEvent)
+
+		if err := json.Unmarshal(message.Payload(), event); err == nil {
 			input <- event
 		} else {
 			manager.logger.Printf("Failed to parse digital event. %s.\n", err.Error())
@@ -98,19 +103,22 @@ func (manager *Manager) PublishDigitalInput(input ganglia.DigitalInput, topic st
 
 func (manager *Manager) watchAnalogInput(input ganglia.AnalogInput, topic string) {
 	for event := range input {
-		manager.broker.Publish(encodeAnalogEvent(event), topic)
+		payload, _ := json.Marshal(event)
+		manager.broker.Publish(payload, topic)
 	}
 }
 
 func (manager *Manager) watchDigitalInput(input ganglia.DigitalInput, topic string) {
 	for event := range input {
-		manager.broker.Publish(encodeDigitalEvent(event), topic)
+		payload, _ := json.Marshal(event)
+		manager.broker.Publish(payload, topic)
 	}
 }
 
 func (manager *Manager) watchOutput(output chan ganglia.DigitalValue, topic string) {
 	for value := range output {
-		event := &DigitalEvent{bool(value), time.Now()}
-		manager.broker.Publish(encodeDigitalEvent(event), topic)
+		event := &ganglia.DigitalEvent{time.Now(), value}
+		payload, _ := json.Marshal(event)
+		manager.broker.Publish(payload, topic)
 	}
 }
