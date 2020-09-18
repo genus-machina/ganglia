@@ -1,4 +1,4 @@
-package widgets
+package i2c
 
 import (
 	"image"
@@ -10,14 +10,14 @@ import (
 
 type SSD1306 struct {
 	device  *ssd1306.Dev
-	last    *context
-	updates chan *context
+	last    *displayContext
+	updates chan *displayContext
 }
 
-func NewSSD1306(device *ssd1306.Dev) *SSD1306 {
+func newSSD1306(device *ssd1306.Dev) *SSD1306 {
 	display := new(SSD1306)
 	display.device = device
-	display.updates = make(chan *context, 10)
+	display.updates = make(chan *displayContext, 10)
 	go display.watchUpdates()
 	return display
 }
@@ -28,14 +28,14 @@ func (display *SSD1306) Halt() {
 }
 
 func (display *SSD1306) Render(content ganglia.Widget) {
-	context := createContext(content, display.updates)
-	context.Render()
+	displayContext := createDisplayContext(content, display.updates)
+	displayContext.Render()
 }
 
-func (display *SSD1306) render(context *context) {
+func (display *SSD1306) render(displayContext *displayContext) {
 	bounds := display.device.Bounds()
-	content := context.Content()
-	rerender := context.Render
+	content := displayContext.Content()
+	rerender := displayContext.Render
 
 	var rendered image.Image
 	if content == nil {
@@ -48,12 +48,12 @@ func (display *SSD1306) render(context *context) {
 }
 
 func (display *SSD1306) watchUpdates() {
-	for context := range display.updates {
-		if display.last != nil && display.last != context {
+	for displayContext := range display.updates {
+		if display.last != nil && display.last != displayContext {
 			display.last.Halt()
 		}
 
-		display.last = context
-		display.render(context)
+		display.last = displayContext
+		display.render(displayContext)
 	}
 }
