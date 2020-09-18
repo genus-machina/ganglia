@@ -9,11 +9,18 @@ import (
 	"periph.io/x/periph/conn/gpio/gpioreg"
 )
 
+const (
+	PullDown = gpio.PullDown
+	PullUp   = gpio.PullUp
+)
+
 type Manager struct {
 	done   chan bool
 	logger *log.Logger
 	pins   []gpio.PinIO
 }
+
+type Pull gpio.Pull
 
 func NewManager(logger *log.Logger) *Manager {
 	manager := new(Manager)
@@ -32,11 +39,11 @@ func (manager *Manager) Halt() {
 	}
 }
 
-func (manager *Manager) Input(name string, pull gpio.Pull) (ganglia.DigitalInput, error) {
+func (manager *Manager) Input(name string, pull Pull) (ganglia.DigitalInput, error) {
 	input := make(chan *ganglia.DigitalEvent, 1)
 	pin := gpioreg.ByName(name)
 
-	if err := pin.In(pull, gpio.BothEdges); err != nil {
+	if err := pin.In(gpio.Pull(pull), gpio.BothEdges); err != nil {
 		return nil, err
 	}
 

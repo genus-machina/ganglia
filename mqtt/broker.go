@@ -97,7 +97,8 @@ func (broker *Broker) resubscribe() {
 	broker.logger.Println("Resubscribing to all previously subscribed topics.")
 	for topic, handlers := range broker.subscriptions {
 		for _, handler := range handlers {
-			broker.client.Subscribe(topic, AtMostOnce, handler)
+			wrapper := wrapMessageHandler(handler)
+			broker.client.Subscribe(topic, AtMostOnce, wrapper)
 		}
 	}
 }
@@ -106,15 +107,28 @@ func (broker *Broker) Publish(message []byte, topic string) {
 	broker.client.Publish(topic, AtMostOnce, true, message)
 }
 
-func (broker *Broker) Subscribe(topic string, handler mqtt.MessageHandler) {
+func (broker *Broker) Subscribe(topic string, handler MessageHandler) {
 	broker.mutex.Lock()
 	defer broker.mutex.Unlock()
 
 	broker.logger.Printf("Subscribing to topic '%s'.\n", topic)
-	broker.client.Subscribe(topic, AtMostOnce, handler)
+	wrapper := wrapMessageHandler(handler)
+	broker.client.Subscribe(topic, AtMostOnce, wrapper)
 	handlers := broker.subscriptions[topic]
 	handlers = append(handlers, handler)
 	broker.subscriptions[topic] = handlers
+}
+
+type Message []byte
+
+type MessageHandler func(Message)
+
+func wrapMessageHandler(handler MessageHandler) mqtt.MessageHandler {
+	return func(client mqtt.Client, message mqtt.Message) {
+		wrappedMessage := Message(message.Payload())
+		handler(wrappedMessage)
+		message.Ack()
+	}
 }
 
 type MqttOptions struct {
@@ -125,4 +139,4 @@ type MqttOptions struct {
 	KeyFile  string
 }
 
-type SubscriptionMap map[string][]mqtt.MessageHandler
+type SubscriptionMap map[string][]MessageHandler

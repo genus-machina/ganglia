@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/eclipse/paho.mqtt.golang"
 	"github.com/genus-machina/ganglia"
 )
 
@@ -65,31 +64,27 @@ func (manager *Manager) Halt() {
 	}
 }
 
-func (manager *Manager) handleAnalogEvent(input chan *ganglia.AnalogEvent) mqtt.MessageHandler {
-	return func(client mqtt.Client, message mqtt.Message) {
+func (manager *Manager) handleAnalogEvent(input chan *ganglia.AnalogEvent) MessageHandler {
+	return func(message Message) {
 		event := new(ganglia.AnalogEvent)
 
-		if err := json.Unmarshal(message.Payload(), event); err == nil {
+		if err := json.Unmarshal(message, event); err == nil {
 			input <- event
 		} else {
 			manager.logger.Printf("Failed to parse analog event. %s.\n", err.Error())
 		}
-
-		message.Ack()
 	}
 }
 
-func (manager *Manager) handleDigitalEvent(input chan *ganglia.DigitalEvent) mqtt.MessageHandler {
-	return func(client mqtt.Client, message mqtt.Message) {
+func (manager *Manager) handleDigitalEvent(input chan *ganglia.DigitalEvent) MessageHandler {
+	return func(message Message) {
 		event := new(ganglia.DigitalEvent)
 
-		if err := json.Unmarshal(message.Payload(), event); err == nil {
+		if err := json.Unmarshal(message, event); err == nil {
 			input <- event
 		} else {
 			manager.logger.Printf("Failed to parse digital event. %s.\n", err.Error())
 		}
-
-		message.Ack()
 	}
 }
 
