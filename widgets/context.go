@@ -1,19 +1,23 @@
-package display
+package widgets
+
+import (
+	"github.com/genus-machina/ganglia"
+)
 
 type context struct {
-	content Widget
+	content ganglia.Widget
 	halted  bool
 	updates chan *context
 }
 
-func createContext(content Widget, updates chan *context) *context {
+func createContext(content ganglia.Widget, updates chan *context) *context {
 	c := new(context)
 	c.content = content
 	c.updates = updates
 	return c
 }
 
-func (c *context) Content() Widget {
+func (c *context) Content() ganglia.Widget {
 	return c.content
 }
 

@@ -1,9 +1,10 @@
-package display
+package widgets
 
 import (
 	"image"
 	"image/color"
 
+	"github.com/genus-machina/ganglia"
 	"golang.org/x/image/font"
 )
 
@@ -30,7 +31,7 @@ func (widget *Text) computeBounds(bounds image.Rectangle) image.Rectangle {
 	return bounds.Intersect(translated)
 }
 
-func (widget *Text) Render(bounds image.Rectangle, rerender Trigger) image.Image {
+func (widget *Text) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
 	buffer := image.NewNRGBA(widget.computeBounds(bounds))
 
 	drawer := new(font.Drawer)

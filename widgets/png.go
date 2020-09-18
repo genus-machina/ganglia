@@ -1,9 +1,11 @@
-package display
+package widgets
 
 import (
 	"image"
 	"image/png"
 	"os"
+
+	"github.com/genus-machina/ganglia"
 )
 
 type PNG struct {
@@ -25,7 +27,7 @@ func NewPNG(path string) (*PNG, error) {
 	return widget, nil
 }
 
-func (widget *PNG) Render(bounds image.Rectangle, rerender Trigger) image.Image {
+func (widget *PNG) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
 	scaledBounds := computeImageBounds(widget.content, bounds)
 	buffer := image.NewNRGBA(scaledBounds)
 	scaleImage(buffer, scaledBounds, widget.content, widget.content.Bounds())

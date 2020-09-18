@@ -1,4 +1,4 @@
-package display
+package widgets
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"os"
 	"sync"
 	"testing"
+
+	"github.com/genus-machina/ganglia"
 )
 
 type TestDisplay struct {
@@ -44,14 +46,14 @@ func (display *TestDisplay) MaxFrames(count int) *TestDisplay {
 	return display
 }
 
-func (display *TestDisplay) Render(content Widget) {
+func (display *TestDisplay) Render(content ganglia.Widget) {
 	display.start()
 	display.render(content, display.rerender(content))
 	display.frames.Wait()
 	display.stop()
 }
 
-func (display *TestDisplay) render(content Widget, rerender Trigger) {
+func (display *TestDisplay) render(content ganglia.Widget, rerender ganglia.Trigger) {
 	file, err := os.Create(display.fileName())
 	if err != nil {
 		display.t.Errorf("Failed to create image. %s.", err.Error())
@@ -64,7 +66,7 @@ func (display *TestDisplay) render(content Widget, rerender Trigger) {
 	}
 }
 
-func (display *TestDisplay) rerender(content Widget) Trigger {
+func (display *TestDisplay) rerender(content ganglia.Widget) ganglia.Trigger {
 	return func() {
 		if display.running() {
 			display.render(content, display.rerender(content))

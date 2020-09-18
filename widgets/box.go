@@ -1,8 +1,10 @@
-package display
+package widgets
 
 import (
 	"image"
 	"image/draw"
+
+	"github.com/genus-machina/ganglia"
 )
 
 // direction
@@ -32,7 +34,7 @@ const (
 )
 
 type Box struct {
-	children []Widget
+	children []ganglia.Widget
 
 	align     int
 	direction int
@@ -66,7 +68,7 @@ func (box *Box) Align(align int) *Box {
 	return box
 }
 
-func (box *Box) Append(child Widget) *Box {
+func (box *Box) Append(child ganglia.Widget) *Box {
 	box.children = append(box.children, child)
 	return box
 }
@@ -231,7 +233,7 @@ func (box *Box) Justify(justify int) *Box {
 	return box
 }
 
-func (box *Box) Render(bounds image.Rectangle, rerender Trigger) image.Image {
+func (box *Box) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
 	buffer := image.NewNRGBA(box.bounds(bounds))
 
 	switch box.display {
@@ -244,7 +246,7 @@ func (box *Box) Render(bounds image.Rectangle, rerender Trigger) image.Image {
 	return buffer
 }
 
-func (box *Box) renderFixed(buffer draw.Image, rerender Trigger) {
+func (box *Box) renderFixed(buffer draw.Image, rerender ganglia.Trigger) {
 	var children []image.Image
 	remaining := buffer.Bounds()
 	total := remaining
@@ -261,7 +263,7 @@ func (box *Box) renderFixed(buffer draw.Image, rerender Trigger) {
 	}
 }
 
-func (box *Box) renderFlex(buffer draw.Image, rerender Trigger) {
+func (box *Box) renderFlex(buffer draw.Image, rerender ganglia.Trigger) {
 	for index, child := range box.children {
 		bounds := box.flexBox(buffer.Bounds(), index)
 		rendered := child.Render(bounds, rerender)

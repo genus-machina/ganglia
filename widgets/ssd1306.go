@@ -1,8 +1,10 @@
-package display
+package widgets
 
 import (
 	"image"
 	"image/color"
+
+	"github.com/genus-machina/ganglia"
 	"periph.io/x/periph/devices/ssd1306"
 )
 
@@ -25,7 +27,7 @@ func (display *SSD1306) Halt() {
 	display.device.Halt()
 }
 
-func (display *SSD1306) Render(content Widget) {
+func (display *SSD1306) Render(content ganglia.Widget) {
 	context := createContext(content, display.updates)
 	context.Render()
 }

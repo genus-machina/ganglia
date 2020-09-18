@@ -1,4 +1,4 @@
 *.png
 *.swp
 
-!display/dialog-warning-symbolic.png
+!widgets/dialog-warning-symbolic.png

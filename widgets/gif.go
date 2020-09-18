@@ -1,4 +1,4 @@
-package display
+package widgets
 
 import (
 	"image"
@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/genus-machina/ganglia"
 )
 
 type GIF struct {
@@ -41,7 +43,7 @@ func NewGIF(path string) (*GIF, error) {
 	return widget, nil
 }
 
-func (widget *GIF) advanceFrame(rerender Trigger) {
+func (widget *GIF) advanceFrame(rerender ganglia.Trigger) {
 	delay := widget.getDelay()
 	time.Sleep(delay)
 	widget.index++
@@ -61,7 +63,7 @@ func (widget *GIF) getFrame() image.Image {
 	return widget.content.Image[frameIndex]
 }
 
-func (widget *GIF) Render(bounds image.Rectangle, rerender Trigger) image.Image {
+func (widget *GIF) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
 	frame := widget.getFrame()
 	scaledBounds := computeImageBounds(frame, bounds)
 	buffer := image.NewNRGBA(scaledBounds)
