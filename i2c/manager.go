@@ -2,7 +2,9 @@ package i2c
 
 import (
 	"log"
+	"time"
 
+	"github.com/genus-machina/ganglia"
 	"periph.io/x/periph/conn/i2c"
 	"periph.io/x/periph/conn/i2c/i2creg"
 	"periph.io/x/periph/devices/ssd1306"
@@ -13,6 +15,7 @@ type Device interface {
 }
 
 type Manager struct {
+	bme280  *BME280
 	bus     i2c.BusCloser
 	devices []Device
 	logger  *log.Logger
@@ -49,4 +52,18 @@ func (manager *Manager) Display() (*SSD1306, error) {
 
 	manager.devices = append(manager.devices, device)
 	return newSSD1306(device), nil
+}
+
+func (manager *Manager) EnvironmentalInput() (ganglia.EnvironmentalInput, error) {
+	if manager.bme280 == nil {
+		manager.bme280 = newBME280(manager.logger, manager.bus)
+		manager.devices = append(manager.devices, manager.bme280)
+	}
+
+	input, err := manager.bme280.SenseContinuous(time.Minute)
+	if err != nil {
+		return nil, err
+	}
+
+	return input, nil
 }
