@@ -36,8 +36,8 @@ func (device *BME280) buildDevice() (*bmxx80.Dev, error) {
 	return bmxx80.NewI2C(device.bus, 0x76, options)
 }
 
-func (device *BME280) buildEvent(value *physic.Env) *ganglia.Environmental {
-	event := new(ganglia.Environmental)
+func (device *BME280) buildEvent(value *physic.Env) *ganglia.EnvironmentalEvent {
+	event := new(ganglia.EnvironmentalEvent)
 	event.Humidity = float64(value.Humidity) / float64(physic.PercentRH)
 	event.Pressure = float64(value.Pressure) / float64(physic.Pascal) / 3386.38816
 	event.Temperature = value.Temperature.Fahrenheit()
@@ -109,7 +109,7 @@ func (device *BME280) SenseContinuous(interval time.Duration) (ganglia.Environme
 		return nil, err
 	}
 
-	values := make(chan *ganglia.Environmental)
+	values := make(chan *ganglia.EnvironmentalEvent)
 	go device.readValues(values, interval)
 	return values, nil
 }
