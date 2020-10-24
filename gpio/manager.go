@@ -32,7 +32,7 @@ func NewManager(logger *log.Logger) *Manager {
 		manager.logger.Fatalf("Failed to initialize host. %s.\n", err.Error())
 	}
 
-	return nil
+	return manager
 }
 
 func (manager *Manager) Halt() {
