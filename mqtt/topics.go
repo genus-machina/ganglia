@@ -5,11 +5,6 @@ import (
 )
 
 const (
-	Borealis = "borealis"
-	Dashi    = "dashi"
-	Enrico   = "enrico"
-	Tweak    = "tweak"
-
 	DevicesPath = "devices"
 	StatusPath  = "status"
 )
