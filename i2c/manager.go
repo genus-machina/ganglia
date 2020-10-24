@@ -8,6 +8,7 @@ import (
 	"periph.io/x/periph/conn/i2c"
 	"periph.io/x/periph/conn/i2c/i2creg"
 	"periph.io/x/periph/devices/ssd1306"
+	"periph.io/x/periph/host"
 )
 
 type Device interface {
@@ -29,6 +30,10 @@ func newManager(logger *log.Logger, bus i2c.BusCloser) *Manager {
 }
 
 func Connect(logger *log.Logger) (*Manager, error) {
+	if _, err := host.Init(); err != nil {
+		return nil, err
+	}
+
 	bus, err := i2creg.Open("")
 	if err != nil {
 		return nil, err

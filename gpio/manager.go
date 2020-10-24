@@ -7,6 +7,7 @@ import (
 	"github.com/genus-machina/ganglia"
 	"periph.io/x/periph/conn/gpio"
 	"periph.io/x/periph/conn/gpio/gpioreg"
+	"periph.io/x/periph/host"
 )
 
 const (
@@ -26,6 +27,11 @@ func NewManager(logger *log.Logger) *Manager {
 	manager := new(Manager)
 	manager.done = make(chan bool, 0)
 	manager.logger = log.New(logger.Writer(), "[gpio] ", logger.Flags())
+
+	if _, err := host.Init(); err != nil {
+		manager.logger.Fatalf("Failed to initialize host. %s.\n", err.Error())
+	}
+
 	return nil
 }
 
