@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	PullDown = gpio.PullDown
-	PullUp   = gpio.PullUp
+	PullDown = Pull(gpio.PullDown)
+	PullUp   = Pull(gpio.PullUp)
 )
 
 type Manager struct {
