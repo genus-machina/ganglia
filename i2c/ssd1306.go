@@ -52,9 +52,8 @@ func (display *SSD1306) render(displayContext *displayContext) {
 	display.device.Draw(rendered.Bounds(), rendered, rendered.Bounds().Min)
 }
 
-func (display *SSD1306) Rotate(rotation ganglia.Rotation) *SSD1306 {
+func (display *SSD1306) Rotate(rotation ganglia.Rotation) {
 	display.rotation = rotation
-	return display
 }
 
 func (display *SSD1306) watchUpdates() {
