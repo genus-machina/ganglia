@@ -5,13 +5,15 @@ import (
 	"image/color"
 
 	"github.com/genus-machina/ganglia"
+	"github.com/genus-machina/ganglia/widgets"
 	"periph.io/x/periph/devices/ssd1306"
 )
 
 type SSD1306 struct {
-	device  *ssd1306.Dev
-	last    *displayContext
-	updates chan *displayContext
+	device   *ssd1306.Dev
+	last     *displayContext
+	rotation ganglia.Rotation
+	updates  chan *displayContext
 }
 
 func newSSD1306(device *ssd1306.Dev) *SSD1306 {
@@ -28,7 +30,10 @@ func (display *SSD1306) Halt() {
 }
 
 func (display *SSD1306) Render(content ganglia.Widget) {
-	displayContext := createDisplayContext(content, display.updates)
+	displayContext := createDisplayContext(
+		widgets.NewRotator(content, display.rotation),
+		display.updates,
+	)
 	displayContext.Render()
 }
 
@@ -45,6 +50,11 @@ func (display *SSD1306) render(displayContext *displayContext) {
 	}
 
 	display.device.Draw(rendered.Bounds(), rendered, rendered.Bounds().Min)
+}
+
+func (display *SSD1306) Rotate(rotation ganglia.Rotation) *SSD1306 {
+	display.rotation = rotation
+	return display
 }
 
 func (display *SSD1306) watchUpdates() {
