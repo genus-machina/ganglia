@@ -10,17 +10,17 @@ const (
 )
 
 func DeviceTopic(name string) string {
-	return join("", DevicesPath, name)
+	return JoinPaths("", DevicesPath, name)
 }
 
 func DeviceStatusTopic(name string) string {
 	return StatusTopic(DeviceTopic(name))
 }
 
-func join(parts ...string) string {
+func JoinPaths(parts ...string) string {
 	return strings.Join(parts, "/")
 }
 
 func StatusTopic(base string) string {
-	return join(base, StatusPath)
+	return JoinPaths(base, StatusPath)
 }
