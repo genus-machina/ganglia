@@ -8,10 +8,10 @@ import (
 type BinaryIndicator struct {
 	monitors monitors.DigitalMonitorGroup
 	observer *monitors.DigitalEventObserver
-	outputs  ganglia.DigitalOutputGroup
+	outputs  []ganglia.DigitalOutputGroup
 }
 
-func NewBinaryIndicator(inputs monitors.DigitalMonitorGroup, outputs ganglia.DigitalOutputGroup) *BinaryIndicator {
+func NewBinaryIndicator(inputs monitors.DigitalMonitorGroup, outputs ...ganglia.DigitalOutputGroup) *BinaryIndicator {
 	indicator := new(BinaryIndicator)
 	indicator.monitors = inputs
 	indicator.observer = monitors.NewDigitalEventObserver(indicator.handleEvent)
@@ -34,5 +34,8 @@ func (indicator *BinaryIndicator) Stop() {
 
 func (indicator *BinaryIndicator) update() {
 	value := indicator.monitors.Value()
-	indicator.outputs.Write(value)
+
+	for _, output := range indicator.outputs {
+		output.Write(value)
+	}
 }

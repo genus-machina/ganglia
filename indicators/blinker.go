@@ -13,11 +13,11 @@ type Blinker struct {
 	monitors monitors.DigitalMonitorGroup
 	observer *monitors.DigitalEventObserver
 	on, off  time.Duration
-	outputs  ganglia.DigitalOutputGroup
+	outputs  []ganglia.DigitalOutputGroup
 	value    uint
 }
 
-func NewBlinker(inputs monitors.DigitalMonitorGroup, outputs ganglia.DigitalOutputGroup, on, off time.Duration) *Blinker {
+func NewBlinker(inputs monitors.DigitalMonitorGroup, on, off time.Duration, outputs ...ganglia.DigitalOutputGroup) *Blinker {
 	indicator := new(Blinker)
 	indicator.monitors = inputs
 	indicator.observer = monitors.NewDigitalEventObserver(indicator.handleEvent)
@@ -67,9 +67,13 @@ func (indicator *Blinker) update() {
 }
 
 func (indicator *Blinker) write() {
+	var value uint
+
 	if indicator.active {
-		indicator.outputs.Write(indicator.value)
-	} else {
-		indicator.outputs.Write(0)
+		value = indicator.value
+	}
+
+	for _, output := range indicator.outputs {
+		output.Write(value)
 	}
 }
