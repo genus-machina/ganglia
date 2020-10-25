@@ -18,7 +18,7 @@ function unknown() {
 }
 
 function update() {
-	go get -u ./...
+	GOPROXY=direct go get -u ./...
 	go mod tidy
 }
 
