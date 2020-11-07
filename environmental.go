@@ -13,6 +13,25 @@ type EnvironmentalEvent struct {
 
 type EnvironmentalInput <-chan *EnvironmentalEvent
 
+func (input EnvironmentalInput) CalibrateTemperature(coefficient, intercept float64) EnvironmentalInput {
+	calibrated := make(chan *EnvironmentalEvent, 1)
+	go input.calibrateTemperature(calibrated, coefficient, intercept)
+	return calibrated
+}
+
+func (input EnvironmentalInput) calibrateTemperature(calibrated chan<- *EnvironmentalEvent, coefficient, intercept float64) {
+	defer close(calibrated)
+
+	for event := range input {
+		calibrated <- &EnvironmentalEvent{
+			Humidity:    event.Humidity,
+			Pressure:    event.Pressure,
+			Temperature: event.Temperature*coefficient + intercept,
+			Time:        event.Time,
+		}
+	}
+}
+
 func (input EnvironmentalInput) Read() *EnvironmentalEvent {
 	value := <-input
 	return value
