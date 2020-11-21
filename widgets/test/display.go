@@ -1,4 +1,4 @@
-package widgets
+package test
 
 import (
 	"fmt"

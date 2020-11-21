@@ -2,10 +2,12 @@ package widgets
 
 import (
 	"testing"
+
+	"github.com/genus-machina/ganglia/widgets/test"
 )
 
 func TestBoxColumnFixedAlignBottom(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -20,7 +22,7 @@ func TestBoxColumnFixedAlignBottom(t *testing.T) {
 }
 
 func TestBoxColumnFixedAlignMiddle(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -35,7 +37,7 @@ func TestBoxColumnFixedAlignMiddle(t *testing.T) {
 }
 
 func TestBoxColumnFixedAlignTop(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -50,7 +52,7 @@ func TestBoxColumnFixedAlignTop(t *testing.T) {
 }
 
 func TestBoxColumnFixedJustifyLeft(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -65,7 +67,7 @@ func TestBoxColumnFixedJustifyLeft(t *testing.T) {
 }
 
 func TestBoxColumnFixedJustifyCenter(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -80,7 +82,7 @@ func TestBoxColumnFixedJustifyCenter(t *testing.T) {
 }
 
 func TestBoxColumnFixedJustifyRight(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -95,7 +97,7 @@ func TestBoxColumnFixedJustifyRight(t *testing.T) {
 }
 
 func TestBoxColumnFlexAlignTop(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -110,7 +112,7 @@ func TestBoxColumnFlexAlignTop(t *testing.T) {
 }
 
 func TestBoxColumnFlexAlignBottom(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -125,7 +127,7 @@ func TestBoxColumnFlexAlignBottom(t *testing.T) {
 }
 
 func TestBoxColumnFlexAlignMiddle(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -140,7 +142,7 @@ func TestBoxColumnFlexAlignMiddle(t *testing.T) {
 }
 
 func TestBoxColumnOverflow(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(20)
 
 	box := NewBox().
@@ -153,7 +155,7 @@ func TestBoxColumnOverflow(t *testing.T) {
 }
 
 func TestBoxRowOverflow(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -166,7 +168,7 @@ func TestBoxRowOverflow(t *testing.T) {
 }
 
 func TestBoxRowFixedAlignTop(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 
 	box := NewBox().
 		Align(Top).
@@ -180,7 +182,7 @@ func TestBoxRowFixedAlignTop(t *testing.T) {
 }
 
 func TestBoxRowFixedAlignBottom(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 
 	box := NewBox().
 		Align(Bottom).
@@ -194,7 +196,7 @@ func TestBoxRowFixedAlignBottom(t *testing.T) {
 }
 
 func TestBoxRowFixedAlignMiddle(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 
 	box := NewBox().
 		Align(Middle).
@@ -208,7 +210,7 @@ func TestBoxRowFixedAlignMiddle(t *testing.T) {
 }
 
 func TestBoxRowFixedJustifyLeft(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 
 	box := NewBox().
 		Append(NewText(BuildFontFace(8), "A")).
@@ -222,7 +224,7 @@ func TestBoxRowFixedJustifyLeft(t *testing.T) {
 }
 
 func TestBoxRowFixedJustifyRight(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 
 	box := NewBox().
 		Append(NewText(BuildFontFace(8), "A")).
@@ -236,7 +238,7 @@ func TestBoxRowFixedJustifyRight(t *testing.T) {
 }
 
 func TestBoxRowFixedJustifyCenter(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 
 	box := NewBox().
 		Append(NewText(BuildFontFace(8), "A")).
@@ -250,7 +252,7 @@ func TestBoxRowFixedJustifyCenter(t *testing.T) {
 }
 
 func TestBoxRowFlexJustifyLeft(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -265,7 +267,7 @@ func TestBoxRowFlexJustifyLeft(t *testing.T) {
 }
 
 func TestBoxRowFlexJustifyCenter(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -280,7 +282,7 @@ func TestBoxRowFlexJustifyCenter(t *testing.T) {
 }
 
 func TestBoxRowFlexJustifyRight(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(10)
 
 	box := NewBox().
@@ -295,7 +297,7 @@ func TestBoxRowFlexJustifyRight(t *testing.T) {
 }
 
 func TestBoxDimensions(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(20)
 
 	box := NewBox().
@@ -309,7 +311,7 @@ func TestBoxDimensions(t *testing.T) {
 }
 
 func TestBoxDimensionsHeight(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(20)
 
 	box := NewBox().
@@ -321,7 +323,7 @@ func TestBoxDimensionsHeight(t *testing.T) {
 }
 
 func TestBoxDimensionsWidth(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	face := BuildFontFace(20)
 
 	box := NewBox().

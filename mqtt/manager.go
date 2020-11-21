@@ -3,6 +3,7 @@ package mqtt
 import (
 	"encoding/json"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/genus-machina/ganglia"
@@ -13,8 +14,10 @@ type Manager struct {
 	logger *log.Logger
 
 	analogChannels        []chan *ganglia.AnalogEvent
-	environmentalChannels []chan *ganglia.EnvironmentalEvent
+	channels              []interface{}
 	digitalChannels       []chan *ganglia.DigitalEvent
+	environmentalChannels []chan *ganglia.EnvironmentalEvent
+	rawChannels           []chan Message
 }
 
 func NewManager(logger *log.Logger, broker *Broker) *Manager {
@@ -35,15 +38,13 @@ func Connect(logger *log.Logger, options *MqttOptions) (*Manager, error) {
 
 func (manager *Manager) AnalogInput(topic string) ganglia.AnalogInput {
 	input := make(chan *ganglia.AnalogEvent, 1)
-	manager.broker.Subscribe(topic, manager.handleAnalogEvent(input))
-	manager.analogChannels = append(manager.analogChannels, input)
+	manager.subscribe(topic, input)
 	return input
 }
 
 func (manager *Manager) DigitalInput(topic string) ganglia.DigitalInput {
 	input := make(chan *ganglia.DigitalEvent, 1)
-	manager.broker.Subscribe(topic, manager.handleDigitalEvent(input))
-	manager.digitalChannels = append(manager.digitalChannels, input)
+	manager.subscribe(topic, input)
 	return input
 }
 
@@ -55,87 +56,82 @@ func (manager *Manager) DigitalOutput(topic string) ganglia.DigitalOutput {
 
 func (manager *Manager) EnvironmentalInput(topic string) ganglia.EnvironmentalInput {
 	input := make(chan *ganglia.EnvironmentalEvent, 1)
-	manager.broker.Subscribe(topic, manager.handleEnvironmentalEvent(input))
-	manager.environmentalChannels = append(manager.environmentalChannels, input)
+	manager.subscribe(topic, input)
 	return input
 }
 
 func (manager *Manager) Halt() {
 	manager.broker.Close()
 
-	for _, channel := range manager.analogChannels {
-		close(channel)
-	}
-
-	for _, channel := range manager.digitalChannels {
-		close(channel)
-	}
-
-	for _, channel := range manager.environmentalChannels {
-		close(channel)
+	for _, channel := range manager.channels {
+		reflect.ValueOf(channel).Close()
 	}
 }
 
-func (manager *Manager) handleAnalogEvent(input chan *ganglia.AnalogEvent) MessageHandler {
+func (manager *Manager) handleEvent(input interface{}) MessageHandler {
 	return func(message Message) {
-		event := new(ganglia.AnalogEvent)
+		var event interface{}
+
+		switch input.(type) {
+		case chan *ganglia.AnalogEvent:
+			event = new(ganglia.AnalogEvent)
+		case chan *ganglia.DigitalEvent:
+			event = new(ganglia.DigitalEvent)
+		case chan *ganglia.EnvironmentalEvent:
+			event = new(ganglia.EnvironmentalEvent)
+		default:
+			panic("Unknown event type.")
+		}
 
 		if err := json.Unmarshal(message, event); err == nil {
-			input <- event
+			channel := reflect.ValueOf(input)
+			payload := reflect.ValueOf(event)
+			channel.Send(payload)
 		} else {
-			manager.logger.Printf("Failed to parse analog event. %s.\n", err.Error())
+			manager.logger.Printf("Failed to parse event. %s.\n", err.Error())
 		}
 	}
 }
 
-func (manager *Manager) handleDigitalEvent(input chan *ganglia.DigitalEvent) MessageHandler {
+func (manager *Manager) handleMessage(input chan Message) MessageHandler {
 	return func(message Message) {
-		event := new(ganglia.DigitalEvent)
-
-		if err := json.Unmarshal(message, event); err == nil {
-			input <- event
-		} else {
-			manager.logger.Printf("Failed to parse digital event. %s.\n", err.Error())
-		}
+		input <- message
 	}
 }
 
-func (manager *Manager) handleEnvironmentalEvent(input chan *ganglia.EnvironmentalEvent) MessageHandler {
-	return func(message Message) {
-		event := new(ganglia.EnvironmentalEvent)
+func (manager *Manager) Publish(message interface{}, topic string) error {
+	var err error
+	var payload []byte
 
-		if err := json.Unmarshal(message, event); err == nil {
-			input <- event
-		} else {
-			manager.logger.Printf("Failed to parse environmental event. %s.\n", err.Error())
-		}
+	if payload, err = json.Marshal(message); err == nil {
+		manager.broker.Publish(payload, topic)
 	}
+
+	return err
 }
 
 func (manager *Manager) PublishAnalogInput(input ganglia.AnalogInput, topic string) {
-	go manager.watchAnalogInput(input, topic)
+	go manager.watchInput(input, topic)
 }
 
 func (manager *Manager) PublishDigitalInput(input ganglia.DigitalInput, topic string) {
-	go manager.watchDigitalInput(input, topic)
+	go manager.watchInput(input, topic)
 }
 
 func (manager *Manager) PublishEnvironmentalInput(input ganglia.EnvironmentalInput, topic string) {
-	go manager.watchEnvironmentalInput(input, topic)
+	go manager.watchInput(input, topic)
 }
 
-func (manager *Manager) watchAnalogInput(input ganglia.AnalogInput, topic string) {
-	for event := range input {
-		payload, _ := json.Marshal(event)
-		manager.broker.Publish(payload, topic)
-	}
+func (manager *Manager) Subscribe(topic string) <-chan Message {
+	input := make(chan Message, 1)
+	manager.handleMessage(input)
+	manager.rawChannels = append(manager.rawChannels, input)
+	return input
 }
 
-func (manager *Manager) watchDigitalInput(input ganglia.DigitalInput, topic string) {
-	for event := range input {
-		payload, _ := json.Marshal(event)
-		manager.broker.Publish(payload, topic)
-	}
+func (manager *Manager) subscribe(topic string, input interface{}) {
+	manager.broker.Subscribe(topic, manager.handleEvent(input))
+	manager.channels = append(manager.channels, input)
 }
 
 func (manager *Manager) watchDigitalOutput(output chan ganglia.DigitalValue, topic string) {
@@ -146,9 +142,11 @@ func (manager *Manager) watchDigitalOutput(output chan ganglia.DigitalValue, top
 	}
 }
 
-func (manager *Manager) watchEnvironmentalInput(input ganglia.EnvironmentalInput, topic string) {
-	for event := range input {
-		payload, _ := json.Marshal(event)
-		manager.broker.Publish(payload, topic)
+func (manager *Manager) watchInput(input interface{}, topic string) {
+	channel := reflect.ValueOf(input)
+
+	for value, ok := channel.Recv(); ok; value, ok = channel.Recv() {
+		event := value.Interface()
+		manager.Publish(event, topic)
 	}
 }

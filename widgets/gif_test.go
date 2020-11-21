@@ -3,10 +3,12 @@ package widgets
 import (
 	"image"
 	"testing"
+
+	"github.com/genus-machina/ganglia/widgets/test"
 )
 
 func TestGIFRenderAnimated(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	gif, _ := NewGIF("ballerine.gif")
 
 	display.
@@ -15,7 +17,7 @@ func TestGIFRenderAnimated(t *testing.T) {
 }
 
 func TestGIFScaleAnimated(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	gif, _ := NewGIF("ballerine.gif")
 
 	display.
@@ -25,7 +27,7 @@ func TestGIFScaleAnimated(t *testing.T) {
 }
 
 func TestGIFRenderStatic(t *testing.T) {
-	display := NewTestDisplay(t)
+	display := test.NewTestDisplay(t)
 	gif, _ := NewGIF("bunny.gif")
 
 	display.
