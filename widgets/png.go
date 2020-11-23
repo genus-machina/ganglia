@@ -1,15 +1,12 @@
 package widgets
 
 import (
-	"image"
 	"image/png"
 	"os"
-
-	"github.com/genus-machina/ganglia"
 )
 
 type PNG struct {
-	content image.Image
+	*Image
 }
 
 func NewPNG(path string) (*PNG, error) {
@@ -21,15 +18,11 @@ func NewPNG(path string) (*PNG, error) {
 	}
 	defer file.Close()
 
-	if widget.content, err = png.Decode(file); err != nil {
+	if content, err := png.Decode(file); err == nil {
+		widget.Image = NewImage(content)
+	} else {
 		return nil, err
 	}
-	return widget, nil
-}
 
-func (widget *PNG) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
-	scaledBounds := computeImageBounds(widget.content, bounds)
-	buffer := image.NewNRGBA(scaledBounds)
-	scaleImage(buffer, scaledBounds, widget.content, widget.content.Bounds())
-	return buffer
+	return widget, nil
 }
