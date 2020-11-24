@@ -18,7 +18,7 @@ func NewEnvironmentalEventObserver(handler EnvironmentalEventHandler) *Environme
 	return observer
 }
 
-type EnivormentalMonitor interface {
+type EnvironmentalMonitor interface {
 	CurrentValue() *ganglia.EnvironmentalEvent
 	Subscribe(*EnvironmentalEventObserver)
 	Unsubscribe(*EnvironmentalEventObserver)
