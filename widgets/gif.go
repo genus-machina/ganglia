@@ -17,18 +17,9 @@ type GIF struct {
 	once     *sync.Once
 }
 
-func NewGIF(path string) (*GIF, error) {
+func NewGIF(content *gif.GIF) *GIF {
 	widget := new(GIF)
-
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	if widget.content, err = gif.DecodeAll(file); err != nil {
-		return nil, err
-	}
+	widget.content = content
 
 	switch widget.content.LoopCount {
 	case 0:
@@ -40,7 +31,21 @@ func NewGIF(path string) (*GIF, error) {
 	}
 
 	widget.once = new(sync.Once)
-	return widget, nil
+	return widget
+}
+
+func OpenGIF(path string) (*GIF, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	if content, err := gif.DecodeAll(file); err == nil {
+		return NewGIF(content), nil
+	} else {
+		return nil, err
+	}
 }
 
 func (widget *GIF) advanceFrame(rerender ganglia.Trigger) {

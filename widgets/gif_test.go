@@ -9,7 +9,7 @@ import (
 
 func TestGIFRenderAnimated(t *testing.T) {
 	display := test.NewTestDisplay(t)
-	gif, _ := NewGIF("ballerine.gif")
+	gif, _ := OpenGIF("ballerine.gif")
 
 	display.
 		MaxFrames(10).
@@ -18,7 +18,7 @@ func TestGIFRenderAnimated(t *testing.T) {
 
 func TestGIFScaleAnimated(t *testing.T) {
 	display := test.NewTestDisplay(t)
-	gif, _ := NewGIF("ballerine.gif")
+	gif, _ := OpenGIF("ballerine.gif")
 
 	display.
 		Bounds(image.Rect(0, 0, 12, 12)).
@@ -28,7 +28,7 @@ func TestGIFScaleAnimated(t *testing.T) {
 
 func TestGIFRenderStatic(t *testing.T) {
 	display := test.NewTestDisplay(t)
-	gif, _ := NewGIF("bunny.gif")
+	gif, _ := OpenGIF("bunny.gif")
 
 	display.
 		MaxFrames(2).

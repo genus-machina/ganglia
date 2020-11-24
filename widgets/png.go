@@ -5,13 +5,7 @@ import (
 	"os"
 )
 
-type PNG struct {
-	*Image
-}
-
-func NewPNG(path string) (*PNG, error) {
-	widget := new(PNG)
-
+func OpenPNG(path string) (*Image, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -19,10 +13,8 @@ func NewPNG(path string) (*PNG, error) {
 	defer file.Close()
 
 	if content, err := png.Decode(file); err == nil {
-		widget.Image = NewImage(content)
+		return NewImage(content), nil
 	} else {
 		return nil, err
 	}
-
-	return widget, nil
 }
