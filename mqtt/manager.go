@@ -60,6 +60,12 @@ func (manager *Manager) EnvironmentalInput(topic string) ganglia.EnvironmentalIn
 	return input
 }
 
+func (manager *Manager) EnvironmentalOutput(topic string) ganglia.EnvironmentalOutput {
+	output := make(chan *ganglia.EnvironmentalEvent)
+	go manager.watchEnvironmentalOutput(output, topic)
+	return output
+}
+
 func (manager *Manager) Halt() {
 	manager.broker.Close()
 
@@ -137,6 +143,13 @@ func (manager *Manager) subscribe(topic string, input interface{}) {
 func (manager *Manager) watchDigitalOutput(output chan ganglia.DigitalValue, topic string) {
 	for value := range output {
 		event := &ganglia.DigitalEvent{time.Now(), value}
+		payload, _ := json.Marshal(event)
+		manager.broker.Publish(payload, topic)
+	}
+}
+
+func (manager *Manager) watchEnvironmentalOutput(output chan *ganglia.EnvironmentalEvent, topic string) {
+	for event := range output {
 		payload, _ := json.Marshal(event)
 		manager.broker.Publish(payload, topic)
 	}

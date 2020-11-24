@@ -18,6 +18,14 @@ func NewEnvironmentalEventObserver(handler EnvironmentalEventHandler) *Environme
 	return observer
 }
 
+func NewEnvironmentalForwarder(output ganglia.EnvironmentalOutput) *EnvironmentalEventObserver {
+	return NewEnvironmentalEventObserver(
+		func(event *ganglia.EnvironmentalEvent) {
+			output <- event
+		},
+	)
+}
+
 type EnvironmentalMonitor interface {
 	CurrentValue() *ganglia.EnvironmentalEvent
 	Subscribe(*EnvironmentalEventObserver)

@@ -18,6 +18,14 @@ func NewDigitalEventObserver(handler DigitalEventHandler) *DigitalEventObserver 
 	return observer
 }
 
+func NewDigitalForwarder(output ganglia.DigitalOutput) *DigitalEventObserver {
+	return NewDigitalEventObserver(
+		func(event *ganglia.DigitalEvent) {
+			output <- event.Value
+		},
+	)
+}
+
 type digitalNotifier struct {
 	mutex     sync.Mutex
 	observers []*DigitalEventObserver
