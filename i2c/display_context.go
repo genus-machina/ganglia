@@ -27,6 +27,9 @@ func (c *displayContext) Halt() {
 
 func (c *displayContext) Render() {
 	if !c.halted {
-		c.updates <- c
+		select {
+		case c.updates <- c:
+		default:
+		}
 	}
 }
