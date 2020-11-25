@@ -30,10 +30,11 @@ func (display *SSD1306) Halt() {
 }
 
 func (display *SSD1306) Render(content ganglia.Widget) {
-	displayContext := createDisplayContext(
-		widgets.NewRotator(content, display.rotation),
-		display.updates,
-	)
+	if content != nil {
+		content = widgets.NewRotator(content, display.rotation)
+	}
+
+	displayContext := createDisplayContext(content, display.updates)
 	displayContext.Render()
 }
 
