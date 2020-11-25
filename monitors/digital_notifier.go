@@ -26,6 +26,16 @@ func NewDigitalForwarder(output ganglia.DigitalOutput) *DigitalEventObserver {
 	)
 }
 
+func NewDigitalTrigger(trigger func()) *DigitalEventObserver {
+	return NewDigitalEventObserver(
+		func(event *ganglia.DigitalEvent) {
+			if event.Value == ganglia.High {
+				trigger()
+			}
+		},
+	)
+}
+
 type digitalNotifier struct {
 	mutex     sync.Mutex
 	observers []*DigitalEventObserver
