@@ -6,6 +6,7 @@ import (
 
 type DigitalMonitor interface {
 	CurrentValue() *ganglia.DigitalEvent
+	Once(*DigitalEventObserver)
 	Subscribe(*DigitalEventObserver)
 	Unsubscribe(*DigitalEventObserver)
 }

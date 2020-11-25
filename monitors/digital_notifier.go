@@ -40,6 +40,18 @@ func (notifier *digitalNotifier) handleEvent(event *ganglia.DigitalEvent) {
 	}
 }
 
+func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) {
+	var wrapped *DigitalEventObserver
+
+	handler := func(event *ganglia.DigitalEvent) {
+		observer.handler(event)
+		notifier.Unsubscribe(wrapped)
+	}
+
+	wrapped = NewDigitalEventObserver(handler)
+	notifier.Subscribe(wrapped)
+}
+
 func (notifier *digitalNotifier) Subscribe(observer *DigitalEventObserver) {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()

@@ -28,6 +28,7 @@ func NewEnvironmentalForwarder(output ganglia.EnvironmentalOutput) *Environmenta
 
 type EnvironmentalMonitor interface {
 	CurrentValue() *ganglia.EnvironmentalEvent
+	Once(*EnvironmentalEventObserver)
 	Subscribe(*EnvironmentalEventObserver)
 	Unsubscribe(*EnvironmentalEventObserver)
 }
@@ -57,6 +58,18 @@ func (monitor *EnvironmentalInputMonitor) handleEvent(event *ganglia.Environment
 	for _, observer := range monitor.observers {
 		observer.handler(event)
 	}
+}
+
+func (notifier *EnvironmentalInputMonitor) Once(observer *EnvironmentalEventObserver) {
+	var wrapped *EnvironmentalEventObserver
+
+	handler := func(event *ganglia.EnvironmentalEvent) {
+		observer.handler(event)
+		notifier.Unsubscribe(wrapped)
+	}
+
+	wrapped = NewEnvironmentalEventObserver(handler)
+	notifier.Subscribe(wrapped)
 }
 
 func (monitor *EnvironmentalInputMonitor) Subscribe(observer *EnvironmentalEventObserver) {
