@@ -26,7 +26,7 @@ func NewDigitalForwarder(output ganglia.DigitalOutput) *DigitalEventObserver {
 	)
 }
 
-func NewDigitalTrigger(trigger func()) *DigitalEventObserver {
+func NewDigitalTrigger(trigger ganglia.Trigger) *DigitalEventObserver {
 	return NewDigitalEventObserver(
 		func(event *ganglia.DigitalEvent) {
 			if event.Value == ganglia.High {
