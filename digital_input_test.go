@@ -41,7 +41,7 @@ func TestDigitalInputDebounce(t *testing.T) {
 		t.Errorf("expected %d got %d", 1, count)
 	}
 
-	if results[0].Time != time.Unix(2, 0) {
+	if results[0].Time != time.Unix(0, 0) {
 		t.Errorf("expected %s got %s", time.Unix(2, 0), results[0].Time)
 	}
 

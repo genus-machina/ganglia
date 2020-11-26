@@ -1,7 +1,6 @@
 package ganglia
 
 import (
-	"sync"
 	"time"
 )
 
@@ -24,24 +23,15 @@ func (input DigitalInput) Debounce(duration time.Duration) DigitalInput {
 }
 
 func (input DigitalInput) debounce(debounced chan<- *DigitalEvent, duration time.Duration) {
-	var pending sync.WaitGroup
-	var timer *time.Timer
+	var next time.Time
 	defer close(debounced)
 
 	for event := range input {
-		if timer != nil {
-			timer.Stop()
-		} else {
-			pending.Add(1)
-		}
-
-		timer = time.AfterFunc(duration, func() {
+		if now := time.Now(); now.After(next) {
+			next = now.Add(duration)
 			debounced <- event
-			pending.Done()
-		})
+		}
 	}
-
-	pending.Wait()
 }
 
 func (input DigitalInput) Invert() DigitalInput {
