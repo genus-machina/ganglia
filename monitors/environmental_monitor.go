@@ -51,11 +51,21 @@ func (monitor *EnvironmentalInputMonitor) CurrentValue() *ganglia.EnvironmentalE
 	return monitor.currentValue
 }
 
-func (monitor *EnvironmentalInputMonitor) handleEvent(event *ganglia.EnvironmentalEvent) {
+func (monitor *EnvironmentalInputMonitor) getObservers() []*EnvironmentalEventObserver {
 	monitor.mutex.Lock()
 	defer monitor.mutex.Unlock()
 
+	var observers []*EnvironmentalEventObserver
+
 	for _, observer := range monitor.observers {
+		observers = append(observers, observer)
+	}
+
+	return observers
+}
+
+func (monitor *EnvironmentalInputMonitor) handleEvent(event *ganglia.EnvironmentalEvent) {
+	for _, observer := range monitor.getObservers() {
 		observer.handler(event)
 	}
 }

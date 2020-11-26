@@ -43,11 +43,21 @@ func (monitor *AnalogInputMonitor) CurrentValue() *ganglia.AnalogEvent {
 	return monitor.currentValue
 }
 
-func (monitor *AnalogInputMonitor) handleEvent(event *ganglia.AnalogEvent) {
+func (monitor *AnalogInputMonitor) getObservers() []*AnalogEventObserver {
 	monitor.mutex.Lock()
 	defer monitor.mutex.Unlock()
 
+	var observers []*AnalogEventObserver
+
 	for _, observer := range monitor.observers {
+		observers = append(observers, observer)
+	}
+
+	return observers
+}
+
+func (monitor *AnalogInputMonitor) handleEvent(event *ganglia.AnalogEvent) {
+	for _, observer := range monitor.getObservers() {
 		observer.handler(event)
 	}
 }

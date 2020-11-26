@@ -41,11 +41,21 @@ type digitalNotifier struct {
 	observers []*DigitalEventObserver
 }
 
-func (notifier *digitalNotifier) handleEvent(event *ganglia.DigitalEvent) {
+func (notifier *digitalNotifier) getObservers() []*DigitalEventObserver {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()
 
+	var observers []*DigitalEventObserver
+
 	for _, observer := range notifier.observers {
+		observers = append(observers, observer)
+	}
+
+	return observers
+}
+
+func (notifier *digitalNotifier) handleEvent(event *ganglia.DigitalEvent) {
+	for _, observer := range notifier.getObservers() {
 		observer.handler(event)
 	}
 }
