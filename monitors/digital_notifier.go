@@ -26,6 +26,14 @@ func NewDigitalForwarder(output ganglia.DigitalOutput) *DigitalEventObserver {
 	)
 }
 
+func NewDigitalHandler(handler ganglia.Trigger) *DigitalEventObserver {
+	return NewDigitalEventObserver(
+		func(event *ganglia.DigitalEvent) {
+			handler()
+		},
+	)
+}
+
 func NewDigitalTrigger(trigger ganglia.Trigger) *DigitalEventObserver {
 	return NewDigitalEventObserver(
 		func(event *ganglia.DigitalEvent) {
