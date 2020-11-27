@@ -18,10 +18,14 @@ func NewDigitalEventObserver(handler DigitalEventHandler) *DigitalEventObserver 
 	return observer
 }
 
-func NewDigitalForwarder(output ganglia.DigitalOutput) *DigitalEventObserver {
+type DigitalTarget interface {
+	Write(*ganglia.DigitalEvent)
+}
+
+func NewDigitalForwarder(output DigitalTarget) *DigitalEventObserver {
 	return NewDigitalEventObserver(
 		func(event *ganglia.DigitalEvent) {
-			output <- event.Value
+			output.Write(event)
 		},
 	)
 }
