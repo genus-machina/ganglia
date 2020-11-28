@@ -24,12 +24,24 @@ func (input DigitalInput) Debounce(duration time.Duration) DigitalInput {
 
 func (input DigitalInput) debounce(debounced chan<- *DigitalEvent, duration time.Duration) {
 	var next time.Time
+	var timer *time.Timer
 	defer close(debounced)
 
 	for event := range input {
+		if timer != nil {
+			timer.Stop()
+		}
+
 		if now := time.Now(); now.After(next) {
 			next = now.Add(duration)
 			debounced <- event
+		} else {
+			timer = time.AfterFunc(
+				duration,
+				func() {
+					debounced <- event
+				},
+			)
 		}
 	}
 }

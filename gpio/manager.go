@@ -46,7 +46,7 @@ func (manager *Manager) Halt() {
 }
 
 func (manager *Manager) Input(name string, pull Pull) (ganglia.DigitalInput, error) {
-	input := make(chan *ganglia.DigitalEvent, 1)
+	input := make(chan *ganglia.DigitalEvent, 10)
 	pin := gpioreg.ByName(name)
 
 	if err := pin.In(gpio.Pull(pull), gpio.BothEdges); err != nil {
