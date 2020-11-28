@@ -6,8 +6,8 @@ import (
 
 type DigitalMonitor interface {
 	CurrentValue() *ganglia.DigitalEvent
-	Once(*DigitalEventObserver)
-	Subscribe(*DigitalEventObserver)
+	Once(*DigitalEventObserver) ganglia.Trigger
+	Subscribe(*DigitalEventObserver) ganglia.Trigger
 	Unsubscribe(*DigitalEventObserver)
 }
 

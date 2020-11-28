@@ -72,7 +72,7 @@ func (notifier *digitalNotifier) handleEvent(event *ganglia.DigitalEvent) {
 	}
 }
 
-func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) {
+func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) ganglia.Trigger {
 	var wrapped *DigitalEventObserver
 
 	handler := func(event *ganglia.DigitalEvent) {
@@ -82,12 +82,20 @@ func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) {
 
 	wrapped = NewDigitalEventObserver(handler)
 	notifier.Subscribe(wrapped)
+	return notifier.triggerUnsubscribe(observer)
 }
 
-func (notifier *digitalNotifier) Subscribe(observer *DigitalEventObserver) {
+func (notifier *digitalNotifier) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()
 	notifier.observers = append(notifier.observers, observer)
+	return notifier.triggerUnsubscribe(observer)
+}
+
+func (notifier *digitalNotifier) triggerUnsubscribe(observer *DigitalEventObserver) ganglia.Trigger {
+	return func() {
+		notifier.Unsubscribe(observer)
+	}
 }
 
 func (notifier *digitalNotifier) Unsubscribe(observer *DigitalEventObserver) {

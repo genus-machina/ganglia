@@ -27,13 +27,13 @@ func (composite *digitalMonitorComposite) handleEvent(event *ganglia.DigitalEven
 	composite.digitalNotifier.handleEvent(compositeEvent)
 }
 
-func (composite *digitalMonitorComposite) Subscribe(observer *DigitalEventObserver) {
+func (composite *digitalMonitorComposite) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
 	if len(composite.digitalNotifier.observers) == 0 {
 		composite.left.Subscribe(composite.observer)
 		composite.right.Subscribe(composite.observer)
 	}
 
-	composite.digitalNotifier.Subscribe(observer)
+	return composite.digitalNotifier.Subscribe(observer)
 }
 
 func (composite *digitalMonitorComposite) Unsubscribe(observer *DigitalEventObserver) {

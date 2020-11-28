@@ -20,8 +20,8 @@ func NewAnalogEventObserver(handler AnalogEventHandler) *AnalogEventObserver {
 
 type AnalogMonitor interface {
 	CurrentValue() *ganglia.AnalogEvent
-	Once(*AnalogEventObserver)
-	Subscribe(*AnalogEventObserver)
+	Once(*AnalogEventObserver) ganglia.Trigger
+	Subscribe(*AnalogEventObserver) ganglia.Trigger
 	Unsubscribe(*AnalogEventObserver)
 }
 
@@ -62,22 +62,33 @@ func (monitor *AnalogInputMonitor) handleEvent(event *ganglia.AnalogEvent) {
 	}
 }
 
-func (notifier *AnalogInputMonitor) Once(observer *AnalogEventObserver) {
+func (monitor *AnalogInputMonitor) Once(observer *AnalogEventObserver) ganglia.Trigger {
 	var wrapped *AnalogEventObserver
 
 	handler := func(event *ganglia.AnalogEvent) {
 		observer.handler(event)
-		notifier.Unsubscribe(wrapped)
+		monitor.Unsubscribe(wrapped)
 	}
 
 	wrapped = NewAnalogEventObserver(handler)
-	notifier.Subscribe(wrapped)
+	monitor.Subscribe(wrapped)
+
+	return func() {
+		monitor.Unsubscribe(observer)
+	}
 }
 
-func (monitor *AnalogInputMonitor) Subscribe(observer *AnalogEventObserver) {
+func (monitor *AnalogInputMonitor) Subscribe(observer *AnalogEventObserver) ganglia.Trigger {
 	monitor.mutex.Lock()
 	defer monitor.mutex.Unlock()
 	monitor.observers = append(monitor.observers, observer)
+	return monitor.triggerUnsubscribe(observer)
+}
+
+func (monitor *AnalogInputMonitor) triggerUnsubscribe(observer *AnalogEventObserver) ganglia.Trigger {
+	return func() {
+		monitor.Unsubscribe(observer)
+	}
 }
 
 func (monitor *AnalogInputMonitor) Unsubscribe(observer *AnalogEventObserver) {

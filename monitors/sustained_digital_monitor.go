@@ -42,12 +42,12 @@ func (monitor *SustainedDigitalMonitor) handleEvent(event *ganglia.DigitalEvent)
 	}
 }
 
-func (monitor *SustainedDigitalMonitor) Subscribe(observer *DigitalEventObserver) {
+func (monitor *SustainedDigitalMonitor) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
 	if len(monitor.digitalNotifier.observers) == 0 {
 		monitor.source.Subscribe(monitor.observer)
 	}
 
-	monitor.digitalNotifier.Subscribe(observer)
+	return monitor.digitalNotifier.Subscribe(observer)
 }
 
 func (monitor *SustainedDigitalMonitor) Unsubscribe(observer *DigitalEventObserver) {

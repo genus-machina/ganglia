@@ -28,8 +28,8 @@ func NewEnvironmentalForwarder(output ganglia.EnvironmentalOutput) *Environmenta
 
 type EnvironmentalMonitor interface {
 	CurrentValue() *ganglia.EnvironmentalEvent
-	Once(*EnvironmentalEventObserver)
-	Subscribe(*EnvironmentalEventObserver)
+	Once(*EnvironmentalEventObserver) ganglia.Trigger
+	Subscribe(*EnvironmentalEventObserver) ganglia.Trigger
 	Unsubscribe(*EnvironmentalEventObserver)
 }
 
@@ -70,22 +70,30 @@ func (monitor *EnvironmentalInputMonitor) handleEvent(event *ganglia.Environment
 	}
 }
 
-func (notifier *EnvironmentalInputMonitor) Once(observer *EnvironmentalEventObserver) {
+func (monitor *EnvironmentalInputMonitor) Once(observer *EnvironmentalEventObserver) ganglia.Trigger {
 	var wrapped *EnvironmentalEventObserver
 
 	handler := func(event *ganglia.EnvironmentalEvent) {
 		observer.handler(event)
-		notifier.Unsubscribe(wrapped)
+		monitor.Unsubscribe(wrapped)
 	}
 
 	wrapped = NewEnvironmentalEventObserver(handler)
-	notifier.Subscribe(wrapped)
+	monitor.Subscribe(wrapped)
+	return monitor.triggerUnsubscribe(observer)
 }
 
-func (monitor *EnvironmentalInputMonitor) Subscribe(observer *EnvironmentalEventObserver) {
+func (monitor *EnvironmentalInputMonitor) Subscribe(observer *EnvironmentalEventObserver) ganglia.Trigger {
 	monitor.mutex.Lock()
 	defer monitor.mutex.Unlock()
 	monitor.observers = append(monitor.observers, observer)
+	return monitor.triggerUnsubscribe(observer)
+}
+
+func (monitor *EnvironmentalInputMonitor) triggerUnsubscribe(observer *EnvironmentalEventObserver) ganglia.Trigger {
+	return func() {
+		monitor.Unsubscribe(observer)
+	}
 }
 
 func (monitor *EnvironmentalInputMonitor) Unsubscribe(observer *EnvironmentalEventObserver) {
