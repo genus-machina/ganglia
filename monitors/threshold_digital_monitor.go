@@ -50,7 +50,14 @@ func (monitor *ThresholdDigitalMonitor) Subscribe(observer *DigitalEventObserver
 		monitor.source.Subscribe(monitor.observer)
 	}
 
-	return monitor.digitalNotifier.Subscribe(observer)
+	monitor.digitalNotifier.Subscribe(observer)
+	return monitor.triggerUnsubscribe(observer)
+}
+
+func (monitor *ThresholdDigitalMonitor) triggerUnsubscribe(observer *DigitalEventObserver) ganglia.Trigger {
+	return func() {
+		monitor.Unsubscribe(observer)
+	}
 }
 
 func (monitor *ThresholdDigitalMonitor) Unsubscribe(observer *DigitalEventObserver) {

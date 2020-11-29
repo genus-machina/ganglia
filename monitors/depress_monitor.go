@@ -34,7 +34,14 @@ func (monitor *DepressMonitor) Subscribe(observer *DigitalEventObserver) ganglia
 		monitor.source.Subscribe(monitor.observer)
 	}
 
-	return monitor.digitalNotifier.Subscribe(observer)
+	monitor.digitalNotifier.Subscribe(observer)
+	return monitor.triggerUnsubscribe(observer)
+}
+
+func (monitor *DepressMonitor) triggerUnsubscribe(observer *DigitalEventObserver) ganglia.Trigger {
+	return func() {
+		monitor.Unsubscribe(observer)
+	}
 }
 
 func (monitor *DepressMonitor) Unsubscribe(observer *DigitalEventObserver) {
