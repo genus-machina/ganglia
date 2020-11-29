@@ -9,12 +9,12 @@ import (
 type DigitalEventHandler func(*ganglia.DigitalEvent)
 
 type DigitalEventObserver struct {
-	handler DigitalEventHandler
+	Handler DigitalEventHandler
 }
 
 func NewDigitalEventObserver(handler DigitalEventHandler) *DigitalEventObserver {
 	observer := new(DigitalEventObserver)
-	observer.handler = handler
+	observer.Handler = handler
 	return observer
 }
 
@@ -68,7 +68,7 @@ func (notifier *digitalNotifier) getObservers() []*DigitalEventObserver {
 
 func (notifier *digitalNotifier) handleEvent(event *ganglia.DigitalEvent) {
 	for _, observer := range notifier.getObservers() {
-		observer.handler(event)
+		observer.Handler(event)
 	}
 }
 
@@ -76,7 +76,7 @@ func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) ganglia.Tr
 	var wrapped *DigitalEventObserver
 
 	handler := func(event *ganglia.DigitalEvent) {
-		observer.handler(event)
+		observer.Handler(event)
 		notifier.Unsubscribe(wrapped)
 	}
 
