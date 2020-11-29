@@ -6,9 +6,9 @@ import (
 
 type DepressMonitor struct {
 	digitalNotifier
-	current  *ganglia.DigitalEvent
-	observer *DigitalEventObserver
-	source   DigitalMonitor
+	current, last *ganglia.DigitalEvent
+	observer      *DigitalEventObserver
+	source        DigitalMonitor
 }
 
 func NewDepressMonitor(source DigitalMonitor) *DepressMonitor {
@@ -23,10 +23,12 @@ func (monitor *DepressMonitor) CurrentValue() *ganglia.DigitalEvent {
 }
 
 func (monitor *DepressMonitor) handleEvent(event *ganglia.DigitalEvent) {
-	if monitor.current != nil && monitor.current.Value == ganglia.High && event.Value == ganglia.Low {
-		monitor.digitalNotifier.handleEvent(event)
+	if monitor.last != nil && monitor.last.Value == ganglia.High && event.Value == ganglia.Low {
+		monitor.update(monitor.last)
+		monitor.update(event)
 	}
-	monitor.current = event
+
+	monitor.last = event
 }
 
 func (monitor *DepressMonitor) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
@@ -50,4 +52,9 @@ func (monitor *DepressMonitor) Unsubscribe(observer *DigitalEventObserver) {
 	if len(monitor.digitalNotifier.observers) == 0 {
 		monitor.source.Unsubscribe(monitor.observer)
 	}
+}
+
+func (monitor *DepressMonitor) update(event *ganglia.DigitalEvent) {
+	monitor.current = event
+	monitor.digitalNotifier.handleEvent(monitor.current)
 }
