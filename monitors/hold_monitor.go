@@ -6,31 +6,29 @@ import (
 	"github.com/genus-machina/ganglia"
 )
 
-type ThresholdDigitalMonitor struct {
+type HoldMonitor struct {
 	current *ganglia.DigitalEvent
 	digitalNotifier
-	duration time.Duration
 	observer *DigitalEventObserver
 	source   DigitalMonitor
 	timer    *time.Timer
 }
 
-func NewThresholdDigitalMonitor(source DigitalMonitor, duration time.Duration) *ThresholdDigitalMonitor {
-	monitor := new(ThresholdDigitalMonitor)
-	monitor.duration = duration
+func NewHoldMonitor(source DigitalMonitor) *HoldMonitor {
+	monitor := new(HoldMonitor)
 	monitor.observer = NewDigitalEventObserver(monitor.handleEvent)
 	monitor.source = source
 	return monitor
 }
 
-func (monitor *ThresholdDigitalMonitor) CurrentValue() *ganglia.DigitalEvent {
+func (monitor *HoldMonitor) CurrentValue() *ganglia.DigitalEvent {
 	return monitor.current
 }
 
-func (monitor *ThresholdDigitalMonitor) handleEvent(event *ganglia.DigitalEvent) {
+func (monitor *HoldMonitor) handleEvent(event *ganglia.DigitalEvent) {
 	if event.Value == ganglia.High && monitor.timer == nil {
 		monitor.timer = time.AfterFunc(
-			monitor.duration,
+			time.Second,
 			func() { monitor.update(event) },
 		)
 	}
@@ -45,7 +43,7 @@ func (monitor *ThresholdDigitalMonitor) handleEvent(event *ganglia.DigitalEvent)
 	}
 }
 
-func (monitor *ThresholdDigitalMonitor) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
+func (monitor *HoldMonitor) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
 	if len(monitor.digitalNotifier.observers) == 0 {
 		monitor.source.Subscribe(monitor.observer)
 	}
@@ -54,13 +52,13 @@ func (monitor *ThresholdDigitalMonitor) Subscribe(observer *DigitalEventObserver
 	return monitor.triggerUnsubscribe(observer)
 }
 
-func (monitor *ThresholdDigitalMonitor) triggerUnsubscribe(observer *DigitalEventObserver) ganglia.Trigger {
+func (monitor *HoldMonitor) triggerUnsubscribe(observer *DigitalEventObserver) ganglia.Trigger {
 	return func() {
 		monitor.Unsubscribe(observer)
 	}
 }
 
-func (monitor *ThresholdDigitalMonitor) Unsubscribe(observer *DigitalEventObserver) {
+func (monitor *HoldMonitor) Unsubscribe(observer *DigitalEventObserver) {
 	monitor.digitalNotifier.Unsubscribe(observer)
 
 	if len(monitor.digitalNotifier.observers) == 0 {
@@ -68,7 +66,7 @@ func (monitor *ThresholdDigitalMonitor) Unsubscribe(observer *DigitalEventObserv
 	}
 }
 
-func (monitor *ThresholdDigitalMonitor) update(event *ganglia.DigitalEvent) {
+func (monitor *HoldMonitor) update(event *ganglia.DigitalEvent) {
 	monitor.current = event
 	monitor.digitalNotifier.handleEvent(monitor.current)
 }

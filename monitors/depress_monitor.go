@@ -1,6 +1,8 @@
 package monitors
 
 import (
+	"time"
+
 	"github.com/genus-machina/ganglia"
 )
 
@@ -23,7 +25,10 @@ func (monitor *DepressMonitor) CurrentValue() *ganglia.DigitalEvent {
 }
 
 func (monitor *DepressMonitor) handleEvent(event *ganglia.DigitalEvent) {
-	if monitor.last != nil && monitor.last.Value == ganglia.High && event.Value == ganglia.Low {
+	isLow := event.Value == ganglia.Low
+	wasHigh := monitor.last != nil && monitor.last.Value == ganglia.High
+
+	if wasHigh && isLow && event.Time.Before(monitor.last.Time.Add(500*time.Millisecond)) {
 		monitor.update(monitor.last)
 		monitor.update(event)
 	}
