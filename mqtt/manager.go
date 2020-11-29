@@ -130,7 +130,7 @@ func (manager *Manager) PublishEnvironmentalInput(input ganglia.EnvironmentalInp
 
 func (manager *Manager) Subscribe(topic string) <-chan Message {
 	input := make(chan Message, 1)
-	manager.handleMessage(input)
+	manager.broker.Subscribe(topic, manager.handleMessage(input))
 	manager.rawChannels = append(manager.rawChannels, input)
 	return input
 }
