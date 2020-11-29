@@ -82,7 +82,7 @@ func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) ganglia.Tr
 
 	wrapped = NewDigitalEventObserver(handler)
 	notifier.Subscribe(wrapped)
-	return notifier.triggerUnsubscribe(observer)
+	return notifier.triggerUnsubscribe(wrapped)
 }
 
 func (notifier *digitalNotifier) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
