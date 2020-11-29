@@ -19,7 +19,7 @@ type SSD1306 struct {
 func newSSD1306(device *ssd1306.Dev) *SSD1306 {
 	display := new(SSD1306)
 	display.device = device
-	display.updates = make(chan *displayContext, 1)
+	display.updates = make(chan *displayContext, 10)
 	go display.watchUpdates()
 	return display
 }
