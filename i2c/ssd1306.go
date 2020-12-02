@@ -34,6 +34,10 @@ func (display *SSD1306) Render(content ganglia.Widget) {
 		content = widgets.NewRotator(content, display.rotation)
 	}
 
+	if display.last != nil {
+		display.last.Halt()
+	}
+
 	displayContext := createDisplayContext(content, display.updates)
 	displayContext.Render()
 }
@@ -59,10 +63,6 @@ func (display *SSD1306) Rotate(rotation ganglia.Rotation) {
 
 func (display *SSD1306) watchUpdates() {
 	for displayContext := range display.updates {
-		if display.last != nil && display.last != displayContext {
-			display.last.Halt()
-		}
-
 		display.last = displayContext
 		display.render(displayContext)
 	}
