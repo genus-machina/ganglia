@@ -35,7 +35,7 @@ func NewMarquee(face font.Face, text string) *Marquee {
 func (widget *Marquee) advance(bounds image.Rectangle) {
 	if time.Now().After(widget.nextUpdate) {
 		widget.nextUpdate = time.Now().Add(delay)
-		widget.offset = widget.offset + 10
+		widget.offset = widget.offset + 5
 	}
 
 	if widget.offset > bounds.Dx()+widget.textBounds.Dx() {
