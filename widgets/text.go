@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// The font drawer is not thread safe. Use this to limit
-	// drawing to a single thread.
+	// Font measuring is not thread safe. Use this to limit
+	// the constructor to a single thread.
 	// See https://github.com/golang/freetype/issues/65
 	TextMutex sync.Mutex
 )
@@ -23,6 +23,9 @@ type Text struct {
 }
 
 func NewText(face font.Face, text string) *Text {
+	TextMutex.Lock()
+	defer TextMutex.Unlock()
+
 	bounds, _ := font.BoundString(face, text)
 	textBounds := rectangleFromFixed(bounds)
 
@@ -40,9 +43,6 @@ func (widget *Text) computeBounds(bounds image.Rectangle) image.Rectangle {
 }
 
 func (widget *Text) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
-	TextMutex.Lock()
-	defer TextMutex.Unlock()
-
 	buffer := image.NewNRGBA(widget.computeBounds(bounds))
 
 	drawer := new(font.Drawer)
