@@ -13,7 +13,7 @@ var (
 	// The font drawer is not thread safe. Use this to limit
 	// drawing to a single thread.
 	// See https://github.com/golang/freetype/issues/65
-	TextMutex sync.Mutex
+	TextMutex = new(sync.Mutex)
 )
 
 type Text struct {
