@@ -44,7 +44,7 @@ func (widget *TextArea) buildRows(width int) []string {
 }
 
 func (widget *TextArea) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
-	box := NewBox().Justify(Center)
+	box := NewBox().Align(Middle).Justify(Center)
 	rows := widget.buildRows(bounds.Dx())
 
 	for _, row := range rows {
