@@ -50,6 +50,9 @@ func (widget *Marquee) computeBounds(bounds image.Rectangle) image.Rectangle {
 }
 
 func (widget *Marquee) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
+	TextMutex.Lock()
+	defer TextMutex.Unlock()
+
 	buffer := image.NewNRGBA(widget.computeBounds(bounds))
 	widget.advance(bounds)
 	translation := widget.textBounds.Min.Sub(image.Pt(bounds.Dx()-widget.offset, 0))

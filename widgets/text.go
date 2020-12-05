@@ -3,9 +3,17 @@ package widgets
 import (
 	"image"
 	"image/color"
+	"sync"
 
 	"github.com/genus-machina/ganglia"
 	"golang.org/x/image/font"
+)
+
+var (
+	// The font drawer is not thread safe. Use this to limit
+	// drawing to a single thread.
+	// See https://github.com/golang/freetype/issues/65
+	TextMutex sync.Mutex
 )
 
 type Text struct {
@@ -32,6 +40,9 @@ func (widget *Text) computeBounds(bounds image.Rectangle) image.Rectangle {
 }
 
 func (widget *Text) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
+	TextMutex.Lock()
+	defer TextMutex.Unlock()
+
 	buffer := image.NewNRGBA(widget.computeBounds(bounds))
 
 	drawer := new(font.Drawer)
