@@ -8,7 +8,7 @@ type currentValueFactory func() *ganglia.DigitalEvent
 
 type digitalMonitorComposite struct {
 	currentValue currentValueFactory
-	digitalNotifier
+	DigitalNotifier
 	left, right DigitalMonitor
 	observer    *DigitalEventObserver
 }
@@ -24,22 +24,22 @@ func newDigitalMonitorComposite(left, right DigitalMonitor, currentValue current
 
 func (composite *digitalMonitorComposite) handleEvent(event *ganglia.DigitalEvent) {
 	compositeEvent := composite.currentValue()
-	composite.digitalNotifier.handleEvent(compositeEvent)
+	composite.DigitalNotifier.Notify(compositeEvent)
 }
 
 func (composite *digitalMonitorComposite) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
-	if len(composite.digitalNotifier.observers) == 0 {
+	if len(composite.DigitalNotifier.observers) == 0 {
 		composite.left.Subscribe(composite.observer)
 		composite.right.Subscribe(composite.observer)
 	}
 
-	return composite.digitalNotifier.Subscribe(observer)
+	return composite.DigitalNotifier.Subscribe(observer)
 }
 
 func (composite *digitalMonitorComposite) Unsubscribe(observer *DigitalEventObserver) {
-	composite.digitalNotifier.Unsubscribe(observer)
+	composite.DigitalNotifier.Unsubscribe(observer)
 
-	if len(composite.digitalNotifier.observers) == 0 {
+	if len(composite.DigitalNotifier.observers) == 0 {
 		composite.left.Unsubscribe(composite.observer)
 		composite.right.Unsubscribe(composite.observer)
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 type SustainedDigitalMonitor struct {
-	digitalNotifier
+	DigitalNotifier
 	duration      time.Duration
 	current, last *ganglia.DigitalEvent
 	observer      *DigitalEventObserver
@@ -32,7 +32,7 @@ func (monitor *SustainedDigitalMonitor) handleEvent(event *ganglia.DigitalEvent)
 
 	if monitor.last == nil || event.Value == ganglia.High {
 		monitor.last = event
-		monitor.digitalNotifier.handleEvent(event)
+		monitor.DigitalNotifier.Notify(event)
 
 		if monitor.timer != nil {
 			monitor.timer.Stop()
@@ -43,22 +43,22 @@ func (monitor *SustainedDigitalMonitor) handleEvent(event *ganglia.DigitalEvent)
 }
 
 func (monitor *SustainedDigitalMonitor) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
-	if len(monitor.digitalNotifier.observers) == 0 {
+	if len(monitor.DigitalNotifier.observers) == 0 {
 		monitor.source.Subscribe(monitor.observer)
 	}
 
-	return monitor.digitalNotifier.Subscribe(observer)
+	return monitor.DigitalNotifier.Subscribe(observer)
 }
 
 func (monitor *SustainedDigitalMonitor) Unsubscribe(observer *DigitalEventObserver) {
-	monitor.digitalNotifier.Unsubscribe(observer)
+	monitor.DigitalNotifier.Unsubscribe(observer)
 
-	if len(monitor.digitalNotifier.observers) == 0 {
+	if len(monitor.DigitalNotifier.observers) == 0 {
 		monitor.source.Unsubscribe(monitor.observer)
 	}
 }
 
 func (monitor *SustainedDigitalMonitor) update() {
 	monitor.last = monitor.current
-	monitor.digitalNotifier.handleEvent(monitor.last)
+	monitor.DigitalNotifier.Notify(monitor.last)
 }

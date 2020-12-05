@@ -12,7 +12,7 @@ type DigitalMonitor interface {
 }
 
 type DigitalInputMonitor struct {
-	digitalNotifier
+	DigitalNotifier
 	currentValue *ganglia.DigitalEvent
 	source       ganglia.DigitalInput
 }
@@ -31,6 +31,6 @@ func (monitor *DigitalInputMonitor) CurrentValue() *ganglia.DigitalEvent {
 func (monitor *DigitalInputMonitor) watchSource() {
 	for event := range monitor.source {
 		monitor.currentValue = event
-		monitor.handleEvent(event)
+		monitor.Notify(event)
 	}
 }

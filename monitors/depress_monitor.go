@@ -7,7 +7,7 @@ import (
 )
 
 type DepressMonitor struct {
-	digitalNotifier
+	DigitalNotifier
 	current, last *ganglia.DigitalEvent
 	observer      *DigitalEventObserver
 	source        DigitalMonitor
@@ -37,11 +37,11 @@ func (monitor *DepressMonitor) handleEvent(event *ganglia.DigitalEvent) {
 }
 
 func (monitor *DepressMonitor) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
-	if len(monitor.digitalNotifier.observers) == 0 {
+	if len(monitor.DigitalNotifier.observers) == 0 {
 		monitor.source.Subscribe(monitor.observer)
 	}
 
-	monitor.digitalNotifier.Subscribe(observer)
+	monitor.DigitalNotifier.Subscribe(observer)
 	return monitor.triggerUnsubscribe(observer)
 }
 
@@ -52,14 +52,14 @@ func (monitor *DepressMonitor) triggerUnsubscribe(observer *DigitalEventObserver
 }
 
 func (monitor *DepressMonitor) Unsubscribe(observer *DigitalEventObserver) {
-	monitor.digitalNotifier.Unsubscribe(observer)
+	monitor.DigitalNotifier.Unsubscribe(observer)
 
-	if len(monitor.digitalNotifier.observers) == 0 {
+	if len(monitor.DigitalNotifier.observers) == 0 {
 		monitor.source.Unsubscribe(monitor.observer)
 	}
 }
 
 func (monitor *DepressMonitor) update(event *ganglia.DigitalEvent) {
 	monitor.current = event
-	monitor.digitalNotifier.handleEvent(monitor.current)
+	monitor.DigitalNotifier.Notify(monitor.current)
 }

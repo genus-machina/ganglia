@@ -48,12 +48,12 @@ func NewDigitalTrigger(trigger ganglia.Trigger) *DigitalEventObserver {
 	)
 }
 
-type digitalNotifier struct {
+type DigitalNotifier struct {
 	mutex     sync.Mutex
 	observers []*DigitalEventObserver
 }
 
-func (notifier *digitalNotifier) getObservers() []*DigitalEventObserver {
+func (notifier *DigitalNotifier) getObservers() []*DigitalEventObserver {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()
 
@@ -66,13 +66,13 @@ func (notifier *digitalNotifier) getObservers() []*DigitalEventObserver {
 	return observers
 }
 
-func (notifier *digitalNotifier) handleEvent(event *ganglia.DigitalEvent) {
+func (notifier *DigitalNotifier) Notify(event *ganglia.DigitalEvent) {
 	for _, observer := range notifier.getObservers() {
 		observer.Handler(event)
 	}
 }
 
-func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) ganglia.Trigger {
+func (notifier *DigitalNotifier) Once(observer *DigitalEventObserver) ganglia.Trigger {
 	var wrapped *DigitalEventObserver
 
 	handler := func(event *ganglia.DigitalEvent) {
@@ -85,20 +85,20 @@ func (notifier *digitalNotifier) Once(observer *DigitalEventObserver) ganglia.Tr
 	return notifier.triggerUnsubscribe(wrapped)
 }
 
-func (notifier *digitalNotifier) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
+func (notifier *DigitalNotifier) Subscribe(observer *DigitalEventObserver) ganglia.Trigger {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()
 	notifier.observers = append(notifier.observers, observer)
 	return notifier.triggerUnsubscribe(observer)
 }
 
-func (notifier *digitalNotifier) triggerUnsubscribe(observer *DigitalEventObserver) ganglia.Trigger {
+func (notifier *DigitalNotifier) triggerUnsubscribe(observer *DigitalEventObserver) ganglia.Trigger {
 	return func() {
 		notifier.Unsubscribe(observer)
 	}
 }
 
-func (notifier *digitalNotifier) Unsubscribe(observer *DigitalEventObserver) {
+func (notifier *DigitalNotifier) Unsubscribe(observer *DigitalEventObserver) {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()
 
