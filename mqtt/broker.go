@@ -44,7 +44,7 @@ func (broker *Broker) buildClientOptions(options *MqttOptions) *mqtt.ClientOptio
 		SetConnectionLostHandler(broker.handleConnectionLost).
 		SetKeepAlive(time.Minute).
 		SetOnConnectHandler(broker.handleConnect).
-		SetWill(DeviceStatusTopic(options.ClientId), StatusMessage(Online), AtLeastOnce, true)
+		SetWill(DeviceStatusTopic(options.ClientId), StatusMessage(Offline), AtLeastOnce, true)
 }
 
 func (broker *Broker) buildTlsConfig(options *MqttOptions) (*tls.Config, error) {
