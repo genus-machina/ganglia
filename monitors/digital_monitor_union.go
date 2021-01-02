@@ -9,14 +9,14 @@ type DigitalMonitorUnion struct {
 }
 
 func NewDigitalMonitorUnion(left, right DigitalMonitor) *DigitalMonitorUnion {
-	intersection := new(DigitalMonitorUnion)
-	intersection.digitalMonitorComposite = newDigitalMonitorComposite(left, right, intersection.CurrentValue)
-	return intersection
+	union := new(DigitalMonitorUnion)
+	union.digitalMonitorComposite = newDigitalMonitorComposite(left, right, union.CurrentValue)
+	return union
 }
 
-func (intersection *DigitalMonitorUnion) CurrentValue() *ganglia.DigitalEvent {
-	left := intersection.left.CurrentValue()
-	right := intersection.right.CurrentValue()
+func (union *DigitalMonitorUnion) CurrentValue() *ganglia.DigitalEvent {
+	left := union.left.CurrentValue()
+	right := union.right.CurrentValue()
 
 	if left == nil {
 		return right

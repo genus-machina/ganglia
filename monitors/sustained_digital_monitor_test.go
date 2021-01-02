@@ -75,8 +75,8 @@ func TestSustainedDigitalMonitor(t *testing.T) {
 	input <- &ganglia.DigitalEvent{Value: ganglia.High}
 	time.Sleep(100 * time.Millisecond)
 
-	if value := sustained.CurrentValue(); value.Value != ganglia.Low {
-		t.Error("expected low")
+	if value := sustained.CurrentValue(); value.Value != ganglia.High {
+		t.Error("expected high")
 	}
 
 	if current != ganglia.Low {
