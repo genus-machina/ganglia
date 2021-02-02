@@ -19,6 +19,7 @@ type Marquee struct {
 	offset     int
 	text       string
 	textBounds image.Rectangle
+	timer      *time.Timer
 }
 
 func NewMarquee(face font.Face, text string) *Marquee {
@@ -64,6 +65,15 @@ func (widget *Marquee) Render(bounds image.Rectangle, rerender ganglia.Trigger) 
 	drawer.Src = image.NewUniform(color.White)
 	drawer.DrawString(widget.text)
 
-	time.AfterFunc(delay, rerender)
+	if widget.timer == nil {
+		widget.timer = time.AfterFunc(
+			delay,
+			func() {
+				widget.timer = nil
+				rerender()
+			},
+		)
+	}
+
 	return buffer
 }
