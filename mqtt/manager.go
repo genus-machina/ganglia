@@ -105,6 +105,10 @@ func (manager *Manager) handleMessage(input chan Message) MessageHandler {
 	}
 }
 
+func (manager *Manager) IsConnected() bool {
+	return manager.broker.IsConnected()
+}
+
 func (manager *Manager) Publish(message interface{}, topic string) error {
 	var err error
 	var payload []byte

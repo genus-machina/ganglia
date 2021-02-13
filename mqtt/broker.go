@@ -83,6 +83,10 @@ func (broker *Broker) handleConnectionLost(client mqtt.Client, err error) {
 	broker.logger.Printf("Lost connection to MQTT broker. %s.\n", err.Error())
 }
 
+func (broker *Broker) IsConnected() bool {
+	return broker.client.IsConnected()
+}
+
 func (broker *Broker) publishBirthMessage() {
 	reader := broker.client.OptionsReader()
 	options := &reader
