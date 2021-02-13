@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/genus-machina/ganglia"
+	"github.com/genus-machina/ganglia/monitors"
 )
 
 type Manager struct {
@@ -105,8 +106,8 @@ func (manager *Manager) handleMessage(input chan Message) MessageHandler {
 	}
 }
 
-func (manager *Manager) IsConnected() bool {
-	return manager.broker.IsConnected()
+func (manager *Manager) Monitor() monitors.DigitalMonitor {
+	return NewMonitor(manager.broker)
 }
 
 func (manager *Manager) Publish(message interface{}, topic string) error {

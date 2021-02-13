@@ -9,12 +9,16 @@ import (
 	"time"
 
 	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/genus-machina/ganglia"
+	"github.com/genus-machina/ganglia/monitors"
 )
 
 type Broker struct {
 	client        mqtt.Client
+	event         *ganglia.DigitalEvent
 	logger        *log.Logger
 	mutex         sync.Mutex
+	notifier      *monitors.DigitalNotifier
 	subscriptions SubscriptionMap
 }
 
@@ -32,6 +36,7 @@ func NewBroker(logger *log.Logger, options *MqttOptions) (*Broker, error) {
 
 	broker.client = mqtt.NewClient(clientOptions)
 	broker.client.Connect()
+	broker.buildEvent()
 	return broker, nil
 }
 
@@ -45,6 +50,13 @@ func (broker *Broker) buildClientOptions(options *MqttOptions) *mqtt.ClientOptio
 		SetKeepAlive(time.Minute).
 		SetOnConnectHandler(broker.handleConnect).
 		SetWill(DeviceStatusTopic(options.ClientId), StatusMessage(Offline), AtLeastOnce, true)
+}
+
+func (broker *Broker) buildEvent() {
+	broker.event = &ganglia.DigitalEvent{
+		Time:  time.Now(),
+		Value: ganglia.DigitalValue(broker.client.IsConnected()),
+	}
 }
 
 func (broker *Broker) buildTlsConfig(options *MqttOptions) (*tls.Config, error) {
@@ -77,14 +89,18 @@ func (broker *Broker) handleConnect(client mqtt.Client) {
 	broker.logger.Println("Connected to MQTT broker.")
 	broker.publishBirthMessage()
 	broker.resubscribe()
+	broker.buildEvent()
+	broker.notify()
 }
 
 func (broker *Broker) handleConnectionLost(client mqtt.Client, err error) {
 	broker.logger.Printf("Lost connection to MQTT broker. %s.\n", err.Error())
+	broker.buildEvent()
+	broker.notify()
 }
 
-func (broker *Broker) IsConnected() bool {
-	return broker.client.IsConnected()
+func (broker *Broker) notify() {
+	broker.notifier.Notify(broker.event)
 }
 
 func (broker *Broker) publishBirthMessage() {
