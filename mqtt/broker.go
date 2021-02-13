@@ -37,7 +37,7 @@ func NewBroker(logger *log.Logger, options *MqttOptions) (*Broker, error) {
 
 	broker.client = mqtt.NewClient(clientOptions)
 	broker.client.Connect()
-	broker.buildEvent()
+	broker.buildEvent(ganglia.Low)
 	return broker, nil
 }
 
@@ -53,10 +53,10 @@ func (broker *Broker) buildClientOptions(options *MqttOptions) *mqtt.ClientOptio
 		SetWill(DeviceStatusTopic(options.ClientId), StatusMessage(Offline), AtLeastOnce, true)
 }
 
-func (broker *Broker) buildEvent() {
+func (broker *Broker) buildEvent(value ganglia.DigitalValue) {
 	broker.event = &ganglia.DigitalEvent{
 		Time:  time.Now(),
-		Value: ganglia.DigitalValue(broker.client.IsConnected()),
+		Value: value,
 	}
 }
 
@@ -90,13 +90,13 @@ func (broker *Broker) handleConnect(client mqtt.Client) {
 	broker.logger.Println("Connected to MQTT broker.")
 	broker.publishBirthMessage()
 	broker.resubscribe()
-	broker.buildEvent()
+	broker.buildEvent(ganglia.High)
 	broker.notify()
 }
 
 func (broker *Broker) handleConnectionLost(client mqtt.Client, err error) {
 	broker.logger.Printf("Lost connection to MQTT broker. %s.\n", err.Error())
-	broker.buildEvent()
+	broker.buildEvent(ganglia.Low)
 	broker.notify()
 }
 
