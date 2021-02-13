@@ -25,6 +25,7 @@ type Broker struct {
 func NewBroker(logger *log.Logger, options *MqttOptions) (*Broker, error) {
 	broker := new(Broker)
 	broker.logger = log.New(logger.Writer(), "[mqtt] ", logger.Flags())
+	broker.notifier = new(monitors.DigitalNotifier)
 	broker.subscriptions = make(SubscriptionMap)
 
 	clientOptions := broker.buildClientOptions(options)
