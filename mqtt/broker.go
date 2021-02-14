@@ -86,6 +86,17 @@ func (broker *Broker) Close() {
 	broker.client.Disconnect(250)
 }
 
+func (broker *Broker) getHandlers(topic string) []MessageHandler {
+	broker.mutex.Lock()
+	defer broker.mutex.Unlock()
+
+	var handlers []MessageHandler
+	for _, handler := range broker.subscriptions[topic] {
+		handlers = append(handlers, handler)
+	}
+	return handlers
+}
+
 func (broker *Broker) handleConnect(client mqtt.Client) {
 	broker.logger.Println("Connected to MQTT broker.")
 	broker.publishBirthMessage()
@@ -98,6 +109,14 @@ func (broker *Broker) handleConnectionLost(client mqtt.Client, err error) {
 	broker.logger.Printf("Lost connection to MQTT broker. %s.\n", err.Error())
 	broker.buildEvent(ganglia.Low)
 	broker.notify()
+}
+
+func (broker *Broker) handleMessage(client mqtt.Client, message mqtt.Message) {
+	wrappedMessage := Message(message.Payload())
+	for _, handler := range broker.getHandlers(message.Topic()) {
+		handler(wrappedMessage)
+	}
+	message.Ack()
 }
 
 func (broker *Broker) notify() {
@@ -116,11 +135,8 @@ func (broker *Broker) resubscribe() {
 	defer broker.mutex.Unlock()
 
 	broker.logger.Println("Resubscribing to all previously subscribed topics.")
-	for topic, handlers := range broker.subscriptions {
-		for _, handler := range handlers {
-			wrapper := wrapMessageHandler(handler)
-			broker.client.Subscribe(topic, AtMostOnce, wrapper)
-		}
+	for topic, _ := range broker.subscriptions {
+		broker.client.Subscribe(topic, AtMostOnce, broker.handleMessage)
 	}
 }
 
@@ -133,8 +149,7 @@ func (broker *Broker) Subscribe(topic string, handler MessageHandler) {
 	defer broker.mutex.Unlock()
 
 	broker.logger.Printf("Subscribing to topic '%s'.\n", topic)
-	wrapper := wrapMessageHandler(handler)
-	broker.client.Subscribe(topic, AtMostOnce, wrapper)
+	broker.client.Subscribe(topic, AtMostOnce, broker.handleMessage)
 	handlers := broker.subscriptions[topic]
 	handlers = append(handlers, handler)
 	broker.subscriptions[topic] = handlers
@@ -143,14 +158,6 @@ func (broker *Broker) Subscribe(topic string, handler MessageHandler) {
 type Message []byte
 
 type MessageHandler func(Message)
-
-func wrapMessageHandler(handler MessageHandler) mqtt.MessageHandler {
-	return func(client mqtt.Client, message mqtt.Message) {
-		wrappedMessage := Message(message.Payload())
-		handler(wrappedMessage)
-		message.Ack()
-	}
-}
 
 type MqttOptions struct {
 	Broker   string
