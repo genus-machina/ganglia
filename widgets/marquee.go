@@ -50,7 +50,13 @@ func (widget *Marquee) advance(bounds image.Rectangle) {
 func (widget *Marquee) computeBounds(bounds image.Rectangle) image.Rectangle {
 	delta := bounds.Min.Sub(widget.textBounds.Min)
 	translated := widget.textBounds.Add(delta)
-	return bounds.Intersect(translated)
+
+	return image.Rect(
+		bounds.Min.X,
+		bounds.Min.Y,
+		bounds.Max.X,
+		translated.Max.Y,
+	)
 }
 
 func (widget *Marquee) Render(bounds image.Rectangle, rerender ganglia.Trigger) image.Image {
