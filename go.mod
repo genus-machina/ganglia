@@ -8,6 +8,6 @@ require (
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	golang.org/x/image v0.0.0-20210216034530-4410531fe030
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
-	golang.org/x/sys v0.0.0-20210218085108-9555bcde0c6a // indirect
+	golang.org/x/sys v0.0.0-20210218155724-8ebf48af031b // indirect
 	periph.io/x/periph v3.6.7+incompatible
 )
