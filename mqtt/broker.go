@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"sync"
 	"time"
 
@@ -47,9 +48,14 @@ func (broker *Broker) buildClientOptions(options *MqttOptions) *mqtt.ClientOptio
 		SetAutoReconnect(true).
 		SetCleanSession(true).
 		SetClientID(options.ClientId).
+		SetConnectionAttemptHandler(broker.handleConnectionAttempt).
 		SetConnectionLostHandler(broker.handleConnectionLost).
+		SetConnectRetry(true).
+		SetConnectRetryInterval(time.Second).
 		SetKeepAlive(time.Minute).
+		SetMaxReconnectInterval(time.Minute).
 		SetOnConnectHandler(broker.handleConnect).
+		SetReconnectingHandler(broker.handleReconnect).
 		SetWill(DeviceStatusTopic(options.ClientId), StatusMessage(Offline), AtLeastOnce, true)
 }
 
@@ -105,6 +111,11 @@ func (broker *Broker) handleConnect(client mqtt.Client) {
 	broker.notify()
 }
 
+func (broker *Broker) handleConnectionAttempt(brokerUrl *url.URL, config *tls.Config) *tls.Config {
+	broker.logger.Printf("Attempting to connect to %s...\n", brokerUrl.String())
+	return config
+}
+
 func (broker *Broker) handleConnectionLost(client mqtt.Client, err error) {
 	broker.logger.Printf("Lost connection to MQTT broker. %s.\n", err.Error())
 	broker.buildEvent(ganglia.Low)
@@ -117,6 +128,10 @@ func (broker *Broker) handleMessage(client mqtt.Client, message mqtt.Message) {
 		handler(wrappedMessage)
 	}
 	message.Ack()
+}
+
+func (broker *Broker) handleReconnect(client mqtt.Client, options *mqtt.ClientOptions) {
+	broker.logger.Println("Reconnecting to broker...")
 }
 
 func (broker *Broker) notify() {
