@@ -30,10 +30,7 @@ func (monitor *DigitalInputMonitor) CurrentValue() *ganglia.DigitalEvent {
 
 func (monitor *DigitalInputMonitor) watchSource() {
 	for event := range monitor.source {
-		oldValue := monitor.currentValue
 		monitor.currentValue = event
-		if monitor.currentValue != oldValue {
-			monitor.Notify(event)
-		}
+		monitor.Notify(event)
 	}
 }
