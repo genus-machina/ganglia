@@ -50,6 +50,24 @@ func (input DigitalInput) debounce(debounced chan<- *DigitalEvent, duration time
 	}
 }
 
+func (input DigitalInput) Dedup() DigitalInput {
+	deduped := make(chan *DigitalEvent)
+	go input.dedup(deduped)
+	return deduped
+}
+
+func (input DigitalInput) dedup(deduped chan<- *DigitalEvent) {
+	var last *DigitalEvent
+	defer close(deduped)
+
+	for event := range input {
+		if last == nil || event.Value != last.Value {
+			deduped <- event
+		}
+		last = event
+	}
+}
+
 func (input DigitalInput) Invert() DigitalInput {
 	inverted := make(chan *DigitalEvent)
 	go input.invert(inverted)
